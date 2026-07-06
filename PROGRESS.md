@@ -30,4 +30,16 @@
 >  - personelde 
 - Should returned equipment be represented only by setting the equipment status back to ```depoda```, or should return history/logs be stored separately?
 - Should leave types and leave statuses be stored as plain varchar values in ```izin_bilgileri```, or should they be modeled as separate lookup tables?
+#### Assumptions made to proceed (to be confirmed with mentor)
+- **Reservations:** assumed hour-based only (spec says "saatlik" + hourly grid mockup).
+  ER: `baslangic_saat` / `bitis_saat` stored as integer hours. If minute-based is
+  needed, only the column type changes (integer → TIME).
+- **ekipman_durum:** assumed only `depoda` / `personelde`. "İade edildi" is not an
+  equipment status — a return is modeled by filling `iade_tarihi` on the assignment
+  record, and the equipment goes back to `depoda`.
+- **Return history:** assumed it should be kept. `zimmetleme_bilgileri` rows are never
+  deleted; a closed row (iade_tarihi set) *is* the history entry.
+- **Leave types vs statuses:** assumed mixed approach. `izin_turu` became a lookup
+  table (HR-extensible, consistent with departman/ekipman_tipi), statuses stayed
+  varchar (fixed workflow: pending/approved/rejected).
 
