@@ -48,10 +48,11 @@ Built as part of a software development internship at JForce Bilişim Teknolojil
 ## Roadmap
 
 1. Database design (ER diagram)
-2. Auth + role structure (JWT)
-3. Employee CRUD & profile
-4. Leave management + approval flow
-5. Equipment management (shared approval flow)
-6. Meeting room reservations
-7. Announcements (likes & comments)
-8. Dashboard
+2. API specification (endpoints & role permissions)
+3. Auth + role structure (JWT)
+4. Employee CRUD & profile
+5. Leave management + approval flow
+6. Equipment management (shared approval flow)
+7. Meeting room reservations
+8. Announcements (likes & comments)
+9. Dashboard
