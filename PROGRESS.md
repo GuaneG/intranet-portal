@@ -72,3 +72,16 @@
 ### Day 4 - 09.07.2026
 - Created the base of API Spec.
 - And Upgraded the API Spec with examples and business decisions to use in dev.
+
+### Day 5 - 10.07.2026
+- Kept working on API.
+
+### Day 6 - 11.07.2026
+- Structured file structure for backend.
+- Documented which type of classes fit to related packages.
+- Started writing Entities from ER Diagram.
+- Writed no arg constructor and getters and setters for entities.
+- Learned: use **Integer** object for entities because primitive type **int** can not store null values.
+- Learned: Annotation's for Entity creation.
+- Next: add remaining @Column annotations and relationship mappings
+  (@ManyToOne / @JoinColumn), complete all entities.
