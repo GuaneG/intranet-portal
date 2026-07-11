@@ -66,3 +66,9 @@
       already blocks that. It stops someone who IS logged in from reaching
       data they shouldn't, in case I mess up a permission check somewhere.
 - Next: create API spec
+### Day 3 - 08.07.2026 
+- Focused on the other internship that i am having, did nothing.
+
+### Day 4 - 09.07.2026
+- Created the base of API Spec.
+- And Upgraded the API Spec with examples and business decisions to use in dev.
