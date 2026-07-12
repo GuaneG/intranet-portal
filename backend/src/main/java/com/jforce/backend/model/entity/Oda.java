@@ -1,14 +1,20 @@
 package com.jforce.backend.model.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "oda")
 public class Oda {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "oda_id")
     private Integer odaId;
+
+    @Column(name = "oda_ad",nullable = false,unique = true)
     private String odaAd;
+
+    @Column(name = "oda_kapasite",nullable = false)
     private Integer odaKapasite;
 
     public Oda() {

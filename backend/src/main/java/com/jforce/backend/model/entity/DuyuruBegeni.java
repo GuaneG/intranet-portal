@@ -1,33 +1,50 @@
 package com.jforce.backend.model.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 //2 tane manytomany ilişki saklayan table
-
+// composite key nasıl gösterilir? idler hem foreign key hemde pk
 @Entity
 @Table(name = "duyuru_begeni")
 public class DuyuruBegeni {
 
-    private Integer duyuruId;
-    private String personelId;
+    @EmbeddedId
+    private DuyuruBegeniId id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("duyuruId")
+    @JoinColumn(name = "duyuru_id", nullable = false)
+    private DuyuruBilgileri duyuru;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("personelId")
+    @JoinColumn(name = "personel_id",nullable = false)
+    private Personel personel;
 
     public DuyuruBegeni() {
     }
 
-    public Integer getDuyuruId() {
-        return duyuruId;
+    public DuyuruBegeniId getId() {
+        return id;
     }
 
-    public void setDuyuruId(Integer duyuruId) {
-        this.duyuruId = duyuruId;
+    public void setId(DuyuruBegeniId id) {
+        this.id = id;
     }
 
-    public String getPersonelId() {
-        return personelId;
+    public DuyuruBilgileri getDuyuru() {
+        return duyuru;
     }
 
-    public void setPersonelId(String personelId) {
-        this.personelId = personelId;
+    public void setDuyuru(DuyuruBilgileri duyuruId) {
+        this.duyuru = duyuruId;
+    }
+
+    public Personel getPersonel() {
+        return personel;
+    }
+
+    public void setPersonel(Personel personelId) {
+        this.personel = personelId;
     }
 }

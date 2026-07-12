@@ -1,7 +1,6 @@
 package com.jforce.backend.model.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,16 +8,43 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "izin_bilgileri")
 public class IzinBilgileri {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "izin_id")
     private String izinId;
-    private String personelId;
-    private Integer izinTuruId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "personel_id",nullable = false)
+    private Personel personelId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "izin_turu_id",nullable = false)
+    private IzinTuru izinTuruId;
+
+    @Column(name = "baslangic_tarihi",nullable = false)
     private LocalDate baslangicTarihi;
+
+    @Column(name = "bitis_tarihi",nullable = false)
     private LocalDate bitisTarihi;
+
+    @Column(name = "is_gunu_sayisi",nullable = false)
     private Integer isGunuSayisi;
+
+    @Column(name = "yoneticiye_not",columnDefinition = "TEXT")
     private String yoneticiyeNot;
-    private Integer izinDurumId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "izin_durum_id", nullable = false)
+    private DurumTuru izinDurumId;
+
+    @Column(name = "talep_tarihi",nullable = false)
     private LocalDateTime talepTarihi;
-    private String islemYapanId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "islem_yapan_id")
+    private Personel islemYapanId;
+
+    @Column(name = "islem_tarihi")
     private LocalDateTime islemTarihi;
 
     public IzinBilgileri() {
@@ -32,19 +58,19 @@ public class IzinBilgileri {
         this.izinId = izinId;
     }
 
-    public String getPersonelId() {
+    public Personel getPersonelId() {
         return personelId;
     }
 
-    public void setPersonelId(String personelId) {
+    public void setPersonelId(Personel personelId) {
         this.personelId = personelId;
     }
 
-    public Integer getIzinTuruId() {
+    public IzinTuru getIzinTuruId() {
         return izinTuruId;
     }
 
-    public void setIzinTuruId(Integer izinTuruId) {
+    public void setIzinTuruId(IzinTuru izinTuruId) {
         this.izinTuruId = izinTuruId;
     }
 
@@ -80,19 +106,19 @@ public class IzinBilgileri {
         this.yoneticiyeNot = yoneticiyeNot;
     }
 
-    public Integer getIzinDurumId() {
+    public DurumTuru getIzinDurumId() {
         return izinDurumId;
     }
 
-    public void setIzinDurumId(Integer izinDurumId) {
+    public void setIzinDurumId(DurumTuru izinDurumId) {
         this.izinDurumId = izinDurumId;
     }
 
-    public String getIslemYapanId() {
+    public Personel getIslemYapanId() {
         return islemYapanId;
     }
 
-    public void setIslemYapanId(String islemYapanId) {
+    public void setIslemYapanId(Personel islemYapanId) {
         this.islemYapanId = islemYapanId;
     }
 

@@ -1,20 +1,41 @@
 package com.jforce.backend.model.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ekipman_talep")
 public class EkipmanTalep {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "talep_id")
     private String talepId;
-    private String personelId;
-    private Integer ekipmanTipiId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "personel_id",nullable = false)
+    private Personel personelId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ekipman_tipi_id",nullable = false)
+    private EkipmanTipi  ekipmanTipiId;
+
+    @Column(name = "aciklama")
     private String aciklama;
-    private Integer talepDurumId;
-    private LocalDateTime talepTarih;
-    private String islemYapanId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "talep_durum_id",nullable = false)
+    private DurumTuru talepDurumId;
+
+    @Column(name = "talep_tarihi")      //kurulduğu an tarih koyma gibi bir anotasyon varmı bak
+    private LocalDateTime talepTarihi;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "islem_yapan_id")
+    private Personel islemYapanId;
+
+    @Column(name = "islem_tarihi")
     private LocalDateTime islemTarihi;
 
     public EkipmanTalep() {
@@ -28,19 +49,19 @@ public class EkipmanTalep {
         this.talepId = talepId;
     }
 
-    public String getPersonelId() {
+    public Personel getPersonelId() {
         return personelId;
     }
 
-    public void setPersonelId(String personelId) {
+    public void setPersonelId(Personel personelId) {
         this.personelId = personelId;
     }
 
-    public Integer getEkipmanTipiId() {
+    public EkipmanTipi getEkipmanTipiId() {
         return ekipmanTipiId;
     }
 
-    public void setEkipmanTipiId(Integer ekipmanTipiId) {
+    public void setEkipmanTipiId(EkipmanTipi ekipmanTipiId) {
         this.ekipmanTipiId = ekipmanTipiId;
     }
 
@@ -52,27 +73,27 @@ public class EkipmanTalep {
         this.aciklama = aciklama;
     }
 
-    public Integer getTalepDurumId() {
+    public DurumTuru getTalepDurumId() {
         return talepDurumId;
     }
 
-    public void setTalepDurumId(Integer talepDurumId) {
+    public void setTalepDurumId(DurumTuru talepDurumId) {
         this.talepDurumId = talepDurumId;
     }
 
     public LocalDateTime getTalepTarih() {
-        return talepTarih;
+        return talepTarihi;
     }
 
-    public void setTalepTarih(LocalDateTime talepTarih) {
-        this.talepTarih = talepTarih;
+    public void setTalepTarih(LocalDateTime talepTarihi) {
+        this.talepTarihi = talepTarihi;
     }
 
-    public String getIslemYapanId() {
+    public Personel getIslemYapanId() {
         return islemYapanId;
     }
 
-    public void setIslemYapanId(String islemYapanId) {
+    public void setIslemYapanId(Personel islemYapanId) {
         this.islemYapanId = islemYapanId;
     }
 

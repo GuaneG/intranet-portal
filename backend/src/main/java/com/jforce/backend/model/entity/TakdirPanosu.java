@@ -1,7 +1,6 @@
 package com.jforce.backend.model.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
@@ -9,10 +8,22 @@ import java.time.LocalDateTime;
 @Table(name = "takdir_panosu")
 public class TakdirPanosu {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer takdirId;
-    private String gonderenPersonelId;
-    private String aliciPersonelId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gonderen_personel_id",nullable = false)
+    private Personel gonderenPersonelId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "alici_personel_id",nullable = false)
+    private Personel aliciPersonelId;
+
+    @Column(name = "mesaj", nullable = false,length = 300)
     private String mesaj;
+
+    @Column(name = "olusturulma_tarihi", nullable = false)
     private LocalDateTime olusturulmaTarih;
 
     public TakdirPanosu() {
@@ -26,19 +37,19 @@ public class TakdirPanosu {
         this.takdirId = takdirId;
     }
 
-    public String getGonderenPersonelId() {
+    public Personel getGonderenPersonelId() {
         return gonderenPersonelId;
     }
 
-    public void setGonderenPersonelId(String gonderenPersonelId) {
+    public void setGonderenPersonelId(Personel gonderenPersonelId) {
         this.gonderenPersonelId = gonderenPersonelId;
     }
 
-    public String getAliciPersonelId() {
+    public Personel getAliciPersonelId() {
         return aliciPersonelId;
     }
 
-    public void setAliciPersonelId(String aliciPersonelId) {
+    public void setAliciPersonelId(Personel aliciPersonelId) {
         this.aliciPersonelId = aliciPersonelId;
     }
 
