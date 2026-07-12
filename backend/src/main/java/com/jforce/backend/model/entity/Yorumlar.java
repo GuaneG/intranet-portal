@@ -20,8 +20,8 @@ public class Yorumlar {
     @JoinColumn(name = "yorum_yapan_id",nullable = false)
     private Personel yorumYapanId;
 
-    @Column(name = "icerik",columnDefinition = "TEXT",nullable = false)
-    private String icerik;
+    @Column(name = "yorum_icerik",columnDefinition = "TEXT",nullable = false)
+    private String yorumIcerik;
 
     @Column(name = "yorum_tarihi",nullable = false)
     private LocalDateTime yorumTarihi;
@@ -45,12 +45,12 @@ public class Yorumlar {
         this.duyuruId = duyuruId;
     }
 
-    public String getIcerik() {
-        return icerik;
+    public String getYorumIcerik() {
+        return yorumIcerik;
     }
 
-    public void setIcerik(String icerik) {
-        this.icerik = icerik;
+    public void setYorumIcerik(String icerik) {
+        this.yorumIcerik = icerik;
     }
 
     public LocalDateTime getYorumTarihi() {

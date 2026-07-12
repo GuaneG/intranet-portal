@@ -7,7 +7,8 @@ import java.time.LocalDate;
 
 //(tarih,oda_id,baslangic_saati) indexini nasıl göstericeksin
 @Entity
-@Table(name = "rezervasyon")
+@Table(name = "rezervasyon", uniqueConstraints = @UniqueConstraint(
+        columnNames = {"tarih", "oda_id", "baslangic_saat"}))
 public class Rezervasyon {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

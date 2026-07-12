@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Table(name = "zimmetleme_bilgileri")
 public class ZimmetlemeBilgileri {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "zimmet_id")
     private String zimmetId;
 
@@ -20,8 +20,8 @@ public class ZimmetlemeBilgileri {
     @JoinColumn(name = "personel_id",nullable = false)
     private Personel personelId;
 
-    @Column(name = "islem_tarihi",nullable = false)
-    private LocalDateTime islemTarihi;
+    @Column(name = "teslim_tarihi",nullable = false)
+    private LocalDateTime teslimTarihi;
 
     @Column(name = "iade_tarihi")
     private LocalDateTime iadeTarihi;
@@ -53,12 +53,12 @@ public class ZimmetlemeBilgileri {
         this.personelId = personelId;
     }
 
-    public LocalDateTime getIslemTarihi() {
-        return islemTarihi;
+    public LocalDateTime getTeslimTarihi() {
+        return teslimTarihi;
     }
 
-    public void setIslemTarihi(LocalDateTime islemTarihi) {
-        this.islemTarihi = islemTarihi;
+    public void setTeslimTarihi(LocalDateTime teslimTarihi) {
+        this.teslimTarihi = teslimTarihi;
     }
 
     public LocalDateTime getIadeTarihi() {

@@ -7,8 +7,8 @@ import jakarta.persistence.*;
 public class DurumTuru {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "durum_turu_id")
-    private Integer durumTuruId;
+    @Column(name = "durum_id")
+    private Integer durumId;
 
     @Column(name = "durum_adi",length = 50,unique = true,nullable = false)
     private String durumAdi;
@@ -16,12 +16,12 @@ public class DurumTuru {
     public DurumTuru() {
     }
 
-    public Integer getDurumTuruId() {
-        return durumTuruId;
+    public Integer getDurumId() {
+        return durumId;
     }
 
-    public void setDurumTuruId(Integer durumTuruId) {
-        this.durumTuruId = durumTuruId;
+    public void setDurumId(Integer durumId) {
+        this.durumId = durumId;
     }
 
     public String getDurumAdi() {

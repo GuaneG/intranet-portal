@@ -15,18 +15,18 @@ public class EkipmanTalep {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personel_id",nullable = false)
-    private Personel personelId;
+    private Personel personel;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ekipman_tipi_id",nullable = false)
-    private EkipmanTipi  ekipmanTipiId;
+    private EkipmanTipi ekipmanTipi;
 
     @Column(name = "aciklama")
     private String aciklama;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "talep_durum_id",nullable = false)
-    private DurumTuru talepDurumId;
+    private DurumTuru talepDurum;
 
     @Column(name = "talep_tarihi")      //kurulduğu an tarih koyma gibi bir anotasyon varmı bak
     private LocalDateTime talepTarihi;
@@ -49,20 +49,20 @@ public class EkipmanTalep {
         this.talepId = talepId;
     }
 
-    public Personel getPersonelId() {
-        return personelId;
+    public Personel getPersonel() {
+        return personel;
     }
 
-    public void setPersonelId(Personel personelId) {
-        this.personelId = personelId;
+    public void setPersonel(Personel personelId) {
+        this.personel = personelId;
     }
 
-    public EkipmanTipi getEkipmanTipiId() {
-        return ekipmanTipiId;
+    public EkipmanTipi getEkipmanTipi() {
+        return ekipmanTipi;
     }
 
-    public void setEkipmanTipiId(EkipmanTipi ekipmanTipiId) {
-        this.ekipmanTipiId = ekipmanTipiId;
+    public void setEkipmanTipi(EkipmanTipi ekipmanTipiId) {
+        this.ekipmanTipi = ekipmanTipiId;
     }
 
     public String getAciklama() {
@@ -73,12 +73,12 @@ public class EkipmanTalep {
         this.aciklama = aciklama;
     }
 
-    public DurumTuru getTalepDurumId() {
-        return talepDurumId;
+    public DurumTuru getTalepDurum() {
+        return talepDurum;
     }
 
-    public void setTalepDurumId(DurumTuru talepDurumId) {
-        this.talepDurumId = talepDurumId;
+    public void setTalepDurum(DurumTuru talepDurumId) {
+        this.talepDurum = talepDurumId;
     }
 
     public LocalDateTime getTalepTarih() {

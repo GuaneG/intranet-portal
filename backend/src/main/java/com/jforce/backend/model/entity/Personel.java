@@ -60,7 +60,7 @@ public class Personel {
     public Personel() {
     }
 
-    public String getpersonelId() {
+    public String getPersonelId() {
         return personelId;
     }
 
@@ -136,7 +136,7 @@ public class Personel {
         return departman;
     }
 
-    public void setDepartmanId(Departman departmanId) {
+    public void setDepartman(Departman departman) {
         this.departman = departman;
     }
 

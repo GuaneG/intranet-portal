@@ -50,6 +50,14 @@ public class IzinBilgileri {
     public IzinBilgileri() {
     }
 
+    public LocalDateTime getIslemTarihi() {
+        return islemTarihi;
+    }
+
+    public void setIslemTarihi(LocalDateTime islemTarihi) {
+        this.islemTarihi = islemTarihi;
+    }
+
     public String getIzinId() {
         return izinId;
     }

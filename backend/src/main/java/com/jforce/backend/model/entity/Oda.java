@@ -11,7 +11,7 @@ public class Oda {
     @Column(name = "oda_id")
     private Integer odaId;
 
-    @Column(name = "oda_ad",nullable = false,unique = true)
+    @Column(name = "oda_ad",nullable = false,unique = true,length = 50)
     private String odaAd;
 
     @Column(name = "oda_kapasite",nullable = false)

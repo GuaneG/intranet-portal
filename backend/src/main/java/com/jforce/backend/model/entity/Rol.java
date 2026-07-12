@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 public class Rol {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "rol_id")
     private Integer rolId;
 
