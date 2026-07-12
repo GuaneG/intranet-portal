@@ -85,3 +85,15 @@
 - Learned: Annotation's for Entity creation.
 - Next: add remaining @Column annotations and relationship mappings
   (@ManyToOne / @JoinColumn), complete all entities.
+
+### Day 7 - 12.07.2026
+- Added remaining annotations and relationships and entities.
+- Completed all entities.
+- Learned: Object references instead of raw Integer or String for FK's is a must. This is how Hibernate works.
+- Learned: Use JoinColumn, and ManyToOne,OneToMany,OneToOne annotations to reference PK's with FK's at FK level.
+- Learned: These annotations (ManyToOne, ...) at default points to the object that is annotated at.
+- Learned: Composite key needs 2 classes one with @Embeddable annotation, one with normal entity class that has the object with Embeddable annotation and EmbeddedId annotation at the top of that object
+- Learned: At composite key class equals and hashcode method's must be overridden because of Hibernate's persistence context is Map Collection.
+- Learned: What is Serializable?
+- Learned: Why JPA needs a no arg constructor.
+- Next: Start to write DTO's 
