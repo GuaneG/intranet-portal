@@ -1,5 +1,6 @@
 package com.jforce.backend.model.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
@@ -15,7 +16,9 @@ import java.util.Objects;
 @Embeddable
 public class PersonelYetenekId implements java.io.Serializable {
 
+    @Column(length = 36)
     private String personelId;
+    @Column(length = 36)
     private Integer yetenekId;
 
 

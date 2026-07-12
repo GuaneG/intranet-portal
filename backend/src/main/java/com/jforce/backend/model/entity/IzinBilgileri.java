@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class IzinBilgileri {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "izin_id")
+    @Column(name = "izin_id",length = 36,nullable = false)
     private String izinId;
 
     @ManyToOne(fetch = FetchType.LAZY)

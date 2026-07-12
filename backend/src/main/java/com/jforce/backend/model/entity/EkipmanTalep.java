@@ -10,7 +10,7 @@ public class EkipmanTalep {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "talep_id")
+    @Column(name = "talep_id",length = 36,nullable = false)
     private String talepId;
 
     @ManyToOne(fetch = FetchType.LAZY)

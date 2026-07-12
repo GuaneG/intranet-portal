@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class EkipmanBilgileri {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "ekipman_id")
+    @Column(name = "ekipman_id",length = 36,nullable = false)
     private String ekipmanId;
 
     @ManyToOne(fetch = FetchType.LAZY)

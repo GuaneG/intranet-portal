@@ -18,7 +18,7 @@ public class DuyuruBegeni {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("personelId")
-    @JoinColumn(name = "personel_id",nullable = false)
+    @JoinColumn(name = "personel_id",nullable = false,columnDefinition = "varchar(36)")
     private Personel personel;
 
     public DuyuruBegeni() {

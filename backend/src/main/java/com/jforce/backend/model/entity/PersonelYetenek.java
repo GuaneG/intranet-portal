@@ -11,7 +11,7 @@ public class PersonelYetenek {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("personelId")
-    @JoinColumn(name = "personel_id")
+    @JoinColumn(name = "personel_id",columnDefinition = "varchar(36)")
     private Personel personel;
 
     @ManyToOne(fetch = FetchType.LAZY)

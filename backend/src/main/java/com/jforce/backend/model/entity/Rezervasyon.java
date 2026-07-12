@@ -12,7 +12,7 @@ import java.time.LocalDate;
 public class Rezervasyon {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "rezervasyon_id")
+    @Column(name = "rezervasyon_id",length = 36,nullable = false)
     private String rezervasyonId;
 
     @ManyToOne(fetch = FetchType.LAZY)

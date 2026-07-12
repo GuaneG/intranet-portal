@@ -11,7 +11,7 @@ public class Personel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "personel_id")
+    @Column(name = "personel_id",length = 36,nullable = false)
     private String personelId;
 
     @Column(name = "kullanici_adi",length = 50,nullable = false,unique = true)

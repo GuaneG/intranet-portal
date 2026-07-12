@@ -1,4 +1,5 @@
 package com.jforce.backend.model.entity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 
@@ -9,6 +10,7 @@ import java.util.Objects;
 public class DuyuruBegeniId implements Serializable {
 
     Integer duyuruId;
+    @Column(length = 36)
     String personelId;
 
     public DuyuruBegeniId() {
