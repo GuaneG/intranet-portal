@@ -97,3 +97,10 @@
 - Learned: What is Serializable?
 - Learned: Why JPA needs a no arg constructor.
 - Next: Start to write DTO's 
+
+### Day 8 - Day 9 (13.07.2026-14.07.2026)
+- Completed all DTO's
+- Separated them as Request and Response
+- Learned: How to create DTOs and which principles to follow while writing DTOs
+- Learned: DTOs derive from endpoints, not entities; request excludes server-set fields (id, timestamps, status) response flattens FKs to names and never exposes the entity
+- Next: Start to write Repository classes
