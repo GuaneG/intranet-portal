@@ -23,6 +23,7 @@ public class EkipmanBilgileri {
     @Column(name = "seri_no",length = 100,unique = true,nullable = false)
     private String seriNo;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ekipman_durum",length = 50,nullable = false)
     private String ekipmanDurum;
 
