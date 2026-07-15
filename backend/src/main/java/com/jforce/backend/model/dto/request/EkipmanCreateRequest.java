@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public record EkipmanCreateRequest(
         @NotNull
-        Integer ekipmanTipi,
+        Integer ekipmanTipiId,
         @NotBlank
         @Size(max = 50)
         String marka,

@@ -7,6 +7,6 @@ public record TakdirPanosuResponse(
         String gonderenAd,
         String aliciAd,
         String mesaj,
-        LocalDateTime olusturmaTarih
+        LocalDateTime olusturmaTarihi
 ) {
 }

@@ -7,6 +7,6 @@ public record YorumResponse(
         String yazan,
         String icerik,
         LocalDateTime tarih,
-        boolean benBegendimMi
+        boolean benMiYaptim
 ) {
 }
