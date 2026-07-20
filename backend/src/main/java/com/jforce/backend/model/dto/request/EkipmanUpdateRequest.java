@@ -1,6 +1,6 @@
 package com.jforce.backend.model.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import com.jforce.backend.model.enums.EkipmanDurum;
 import jakarta.validation.constraints.Size;
 
 public record EkipmanUpdateRequest(

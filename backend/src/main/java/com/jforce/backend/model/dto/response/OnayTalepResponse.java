@@ -1,6 +1,7 @@
 package com.jforce.backend.model.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.jforce.backend.model.enums.TalepTuru;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

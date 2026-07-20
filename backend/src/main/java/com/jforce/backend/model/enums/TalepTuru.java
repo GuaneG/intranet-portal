@@ -1,4 +1,4 @@
-package com.jforce.backend.model.dto.response;
+package com.jforce.backend.model.enums;
 
 public enum TalepTuru {
     IZIN,

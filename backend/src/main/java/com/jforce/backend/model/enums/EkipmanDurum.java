@@ -1,4 +1,4 @@
-package com.jforce.backend.model.dto.request;
+package com.jforce.backend.model.enums;
 
 public enum EkipmanDurum {
     DEPODA,

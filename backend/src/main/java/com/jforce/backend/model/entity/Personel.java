@@ -64,7 +64,7 @@ public class Personel {
         return personelId;
     }
 
-    public void setId(String personelId) {
+    public void setPersonelId(String personelId) {
         this.personelId = personelId;
     }
 
@@ -144,7 +144,7 @@ public class Personel {
         return rol;
     }
 
-    public void setRolId(Rol rol) {
+    public void setRol(Rol rol) {
         this.rol = rol;
     }
 

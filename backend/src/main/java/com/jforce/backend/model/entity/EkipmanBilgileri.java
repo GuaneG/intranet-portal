@@ -1,5 +1,6 @@
 package com.jforce.backend.model.entity;
 
+import com.jforce.backend.model.enums.EkipmanDurum;
 import jakarta.persistence.*;
 
 @Entity
@@ -25,7 +26,7 @@ public class EkipmanBilgileri {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ekipman_durum",length = 50,nullable = false)
-    private String ekipmanDurum;
+    private EkipmanDurum ekipmanDurum;
 
     public EkipmanBilgileri() {
     }
@@ -70,11 +71,11 @@ public class EkipmanBilgileri {
         this.seriNo = seriNo;
     }
 
-    public String getEkipmanDurum() {
+    public EkipmanDurum getEkipmanDurum() {
         return ekipmanDurum;
     }
 
-    public void setEkipmanDurum(String ekipmanDurum) {
+    public void setEkipmanDurum(EkipmanDurum ekipmanDurum) {
         this.ekipmanDurum = ekipmanDurum;
     }
 }
