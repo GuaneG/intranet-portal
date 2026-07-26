@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
   const [kullaniciAdi, setKullaniciAdi] = useState("");
   const [parola, setParola] = useState("");
-  const [hata, setHata] = useState("");
+  const [hata, setHata] = useState(
+    () => sessionStorage.getItem("authMesaji") || "",
+  );
   const navigate = useNavigate();
+
+  useEffect(() => {
+    sessionStorage.removeItem("authMesaji");
+  }, []); //[] = sadece sayfa ilk açıldığında çalış
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -14,6 +20,8 @@ function LoginPage() {
     const cevap = await fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      //cevaptaki Set-Cookie'yi tarayıcının KABUL etmesi için şart; olmazsa cookie sessizce çöpe gider
+      credentials: "include",
       body: JSON.stringify({ kullaniciAdi, parola }),
     });
 
