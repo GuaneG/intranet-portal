@@ -8,8 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest
-public class JWTServiceIntegrationTest {
+public class JWTServiceIntegrationTest  extends AbstractIntegrationTest {
 
     @Autowired
     JWTService jwtService;

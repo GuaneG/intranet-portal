@@ -2,12 +2,14 @@ package com.jforce.backend;
 
 import com.jforce.backend.exception.BadCredentialsException;
 import com.jforce.backend.model.dto.request.LoginRequest;
-import com.jforce.backend.model.dto.response.LoginResponse;
 import com.jforce.backend.model.entity.Personel;
 import com.jforce.backend.model.entity.Rol;
+import com.jforce.backend.model.enums.AuditEylem;
 import com.jforce.backend.repository.PersonelRepository;
+import com.jforce.backend.service.AuditService;
 import com.jforce.backend.service.AuthService;
 import com.jforce.backend.service.JWTService;
+import com.jforce.backend.service.RefreshTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +22,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class) //mockito anotsayonlarını getir
@@ -30,8 +34,12 @@ public class AuthServiceTest {
     PersonelRepository personelRepository;
     @Mock
     PasswordEncoder passwordEncoder;
+    @Mock
+    RefreshTokenService refreshTokenService;
+    @Mock
+    AuditService auditService;
 
-    @InjectMocks //gerçek authservice oluşturur ama constructor'ına bu 3 mock değeri verir
+    @InjectMocks //gerçek authservice oluşturur ama constructor'ına bu 4 mock değeri verir
     AuthService authService;
 
     private Personel personel;
@@ -62,6 +70,7 @@ public class AuthServiceTest {
         LoginRequest loginRequest = new LoginRequest("yok", "Test1234.");
         //act + assert: login çağrısı act, assertThrows içi excp beklentisi assert
         assertThrows(BadCredentialsException.class , () -> authService.login(loginRequest));
+        verify(auditService).logKaydet(eq(AuditEylem.LOGIN_BASARISIZ), isNull(), anyString(), anyString());
     }
 
     @Test
@@ -74,6 +83,7 @@ public class AuthServiceTest {
         LoginRequest request = new LoginRequest("test.kullanici", "yanlisParola");
 
         assertThrows(BadCredentialsException.class, () -> authService.login(request));
+        verify(auditService).logKaydet(eq(AuditEylem.LOGIN_BASARISIZ), isNull(), anyString(), anyString());
     }
 
     @Test
@@ -84,15 +94,18 @@ public class AuthServiceTest {
                 .thenReturn(true);
         when(jwtService.generateToken("uuid-123", "ADMIN"))
                 .thenReturn("sahte-token");
+        when(refreshTokenService.createToken(personel))
+                .thenReturn("sahte-refresh-token");
 
         LoginRequest request = new LoginRequest("test.kullanici", "Test1234.");
 
-        LoginResponse response = authService.login(request);
+        AuthService.LoginResult loginResult = authService.login(request);
 
-        assertEquals("sahte-token", response.token());
-        assertEquals("Test", response.ad());
-        assertEquals("Kullanici", response.soyad());
-        assertEquals("ADMIN", response.rol());
+        assertEquals("sahte-token", loginResult.loginResponse().token());
+        assertEquals("Test", loginResult.loginResponse().ad());
+        assertEquals("Kullanici", loginResult.loginResponse().soyad());
+        assertEquals("ADMIN", loginResult.loginResponse().rol());
+        assertEquals("sahte-refresh-token",loginResult.refreshToken());
     }
 
 }
