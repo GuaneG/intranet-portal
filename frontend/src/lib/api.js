@@ -2,7 +2,7 @@ const BASE_URL = "http://localhost:8080";
 
 let refreshPromise = null;
 
-//single flight prensibi
+//single flight prensibi (aynı sekme içinde yollanılan paralel isteklerin hepsinin işlenilmesini engeller)
 //bu func birden fazla istek 401 yiyince hepsi aynı anda çalışmasın,herkes kendinden önce gelen isteği beklesin diye var.
 function refreshAccessToken() {
   //devam eden bir refresh varmı kontrolü

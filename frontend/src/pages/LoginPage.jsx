@@ -32,7 +32,7 @@ function LoginPage() {
         "kullanici",
         JSON.stringify({ ad: data.ad, soyad: data.soyad, rol: data.rol }),
       );
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } else {
       const err = await cevap.json();
       setHata(err.message);
