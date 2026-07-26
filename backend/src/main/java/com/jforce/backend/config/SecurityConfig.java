@@ -30,10 +30,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable()) //session kullanmıyoruz, jwt var
+                .csrf(csrf -> csrf.disable()) //session kullanmıyoruz, jwt var session-cookie'ye dayanan uygulamalar için tasarlanmıştır
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //jwt kullandığımız için stateless
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/refresh","/api/auth/logout","/api/auth/login","/swagger-ui.html","/swagger-ui/**","/v3/api-docs/**").permitAll().anyRequest().authenticated())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(
+                .exceptionHandling(ex -> ex.authenticationEntryPoint( //gelen 403 req -> 401 çevirme
                 (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

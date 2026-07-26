@@ -42,6 +42,11 @@ public class JWTFilter extends OncePerRequestFilter {
         String sub = claims.getSubject();
         String rol = claims.get("rol",String.class);
 
+        if (sub == null || rol == null) {   // claim eksikse kimlik kurma
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         //bir yetki etiketi taşıyan basit bir nesnedir
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + rol);
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(sub,null, List.of(authority));

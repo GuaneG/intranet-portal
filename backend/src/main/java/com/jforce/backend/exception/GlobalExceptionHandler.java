@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 
 
 //Tüm controller'ların exception handler kayıt defteri,sadece controller'a gelen isteklerin hatalarını yakalar.
+// her exception handler için ex.getMessageYazıp ham exception message döndürme iç detay sızdırabilir.
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -47,7 +48,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, HttpServletRequest request) {
         ErrorResponse body = new ErrorResponse(
                 404,
-                ex.getMessage(),
+                "Böyle bir kaynak bulunamadı.",
                 LocalDateTime.now(),
                 request.getRequestURI()
         );

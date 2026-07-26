@@ -33,7 +33,7 @@ public class AuthController {
         return ResponseCookie.from("refreshToken", value)
                 .httpOnly(true) //js bu cookie'yi OKUYAMAZ -> xss ile çalınamaz
                 .maxAge(maxAgeSeconds) //tarayıcı bu süre sonra cookie'yi kendisi imha eder; DİKKAT: saniye ister, ms değil
-                .secure(false) //true olursa cookie SADECE https'te taşınır; localhost http olduğu için false
+                .secure(false) //true olursa cookie SADECE https'te taşınır (cookie'yi https isteklerine ekle); localhost http olduğu için false
                 .sameSite("Lax") //başka siteden tetiklenen isteklere cookie eklenmez -> csrf kalkanı
                 .path("/api/auth") //cookie sadece bu path'le başlayan isteklerde taşınır
                 .build();
