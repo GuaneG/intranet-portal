@@ -8,6 +8,7 @@ import com.jforce.backend.model.enums.AuditEylem;
 import com.jforce.backend.repository.RefreshTokenRepository;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,4 +121,11 @@ public class RefreshTokenService {
                 })
                 .orElse(null);                      // token bulunmadıysa: (null idomponentlık için)
     }
+
+    @Scheduled(cron = "0 0 3 * * *") // her gece saat 3 te bu metodu çalıştır
+    @Transactional //toplu silme işlemleri transaction ister
+    public void deleteExpiredTokens(){
+        long deletedRowCount = refreshTokenRepository.deleteAllByExpiresAtBefore(Instant.now());
+    }
+
 }
