@@ -104,3 +104,55 @@
 - Learned: How to create DTOs and which principles to follow while writing DTOs
 - Learned: DTOs derive from endpoints, not entities; request excludes server-set fields (id, timestamps, status) response flattens FKs to names and never exposes the entity
 - Next: Start to write Repository classes
+ ### Day 10-16 (catch-up) - 15.07.2026-26.07.2026
+- Created repositories on demand for the auth module (PersonelRepository, RefreshTokenRepository,
+  AuditLogRepository) — I add a repository (and only the methods I need) per module, not all upfront.
+- Implemented JWT login flow: SecurityConfig, JWTFilter, JWTService, AuthController/AuthService.
+  Access token 15 min, kept in localStorage (JS-readable by design).
+- Added refresh token rotation + reuse detection (RefreshTokenService.rotate, 4 branches).
+  Refresh token 14 days, httpOnly cookie, stored in DB as a SHA-256 hash.
+- Built audit log skeleton: AuditEylem enum, AuditLog entity (UUID), AuditLogRepository, AuditService.
+  Login success/fail, logout and token-reuse events are now audited.
+- Added tests: unit (Mockito) for AuthService/RefreshTokenService/JWTService/AuditService,
+  and integration with Testcontainers (real MySQL 8) via an AbstractIntegrationTest base.
+- Frontend: apiFetch in api.js (401 → silent refresh, single-flight pattern), logout, login page,
+  ProtectedRoute and dashboard.
+- Organized all the above into logical commits and pushed to GitHub.
+- Learned: filter chain runs before controllers; 401 (identity) resolves before 404 (routing);
+  authenticationEntryPoint turns Spring's 403 into a 401.
+- Learned: SHA-256 (fast, deterministic → token hash/lookups) vs BCrypt (slow, salted → passwords).
+- Learned: @Transactional — noRollbackFor (throw but still commit), REQUIRES_NEW (audit survives a
+  caller rollback); self-invocation bypasses the proxy so the method must be called via another bean.
+- Learned: cookie flags — httpOnly / secure / sameSite=Lax / maxAge in seconds (0 = delete).
+- Learned: unit tests are isolated (mock, no DB), integration use a real context + DB; ArgumentCaptor
+  to test void methods; integration DB isn't auto-cleaned between methods (use @BeforeEach + deleteAll).
+- Learned: CRLF vs LF — a whole-file line-ending flip makes Git report dozens of "changed" files with
+  zero real code change (git diff -w shows the truth); a stale .git/index.lock blocks all git ops.
+- Next: #7 Personel entity extension (mezunOkul/mezunBolum/mezuniyetYili + iseGirisTarihi).
+### Day 17 - 27.07.2026
+- Did an end-to-end security review of the login module with AI
+  (AuthService, AuthController, SecurityConfig, JWTFilter, JWTService, RefreshTokenService, GlobalExceptionHandler).
+- Fixes applied:
+    - JWTFilter: fail-closed guard — if sub/rol claim is null, don't set authentication (stay anonymous → 401)
+      instead of building a "ROLE_null" authority.
+    - GlobalExceptionHandler: return fixed messages instead of raw ex.getMessage() (don't leak internal details).
+    - RefreshTokenService: added @Scheduled deleteExpiredTokens (+ @EnableScheduling) to purge expired rows,
+      so the refresh_token table stops growing unbounded.
+    - Frontend: login redirect uses { replace: true } + new PublicRoute guard, so an authenticated user
+      can't land on /login (history hygiene + route guard).
+- Learned (XSS): attacker runs their JS in your page; root cause is putting user input into HTML unescaped.
+  Escape = turn < > & " ' into HTML entities so the browser shows them as text, not code. React auto-escapes
+  {value}; only risk is dangerouslySetInnerHTML. Escape (plain text) vs sanitize/DOMPurify (allow safe HTML).
+  Stored XSS steals the VIEWER's token, not the attacker's → privilege escalation.
+- Learned (CSRF): rides on cookies the browser auto-sends; attacker can't READ the response (CORS/SOP),
+  so it's not theft. Safe to disable here because stateless + endpoints auth via Authorization header
+  (not auto-sent); the only cookie endpoint (/refresh) is covered by sameSite=Lax.
+- Learned: three cookie/threat pairs — httpOnly = XSS, secure = network sniffing (MITM), sameSite = CSRF.
+- Learned (timing attack): if BCrypt only runs for existing users, response time leaks whether a username
+  exists; fix is to run BCrypt against a dummy hash even when the user is missing (not a fixed sleep).
+- Learned (history): browser history is a stack; navigate() pushes a new entry, { replace: true } swaps the
+  current one. Route guard = a component wrapping a route to check a condition (ProtectedRoute vs its mirror PublicRoute).
+- Learned: stateless JWT can't be revoked mid-life → a valid access token lives its full 15 min even after
+  logout / role change (the access-token-leak concern).
+- Created a task backlog (16 items) for the remaining security / hardening / feature work.
+- Next: #1 access-token 15-min window mitigation; write the deleteExpiredTokens integration test; #7 Personel entity extension.

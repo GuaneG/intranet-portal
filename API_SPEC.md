@@ -29,7 +29,6 @@
 | Method | Endpoint | Role |
 |--------|----------|------|
 | POST | `/api/auth/login` | herkes (token'sız tek endpoint) |
-| POST | `/api/auth/logout` | tüm roller | 
 
 - Login response: `{ token, ad, soyad, rol }` frontend menüyü role göre kurar
 - Logout: stateless JWT olduğu için server-side işlem yok, client token'ı siler.
