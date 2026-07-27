@@ -2,6 +2,7 @@ package com.jforce.backend.model.entity;
 
 
 import jakarta.persistence.*;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 
@@ -56,12 +57,77 @@ public class Personel {
     @Column(name = "yillik_izin_hakki",nullable = false)
     private Integer yillikIzinHakki = 14;
 
+    @Column(name = "mezun_okul",length = 100)
+    private String mezunOkul;
+
+    @Column(name = "mezun_bolum",length = 100)
+    private String mezunBolum;
+
+    @Column(name = "mezuniyet_yili")
+    private Integer mezuniyetYil;
+
+    @Column(name = "is_cikis_tarihi")
+    private LocalDate isCikisTarihi;
+
+    @Column(name = "tel_no",length = 30)
+    private String telNo;
+
+    @Column(name = "is_giris_tarihi",nullable = false)
+    private LocalDate isGirisTarihi;
 
     public Personel() {
     }
 
     public String getPersonelId() {
         return personelId;
+    }
+
+    public String getMezunOkul() {
+        return mezunOkul;
+    }
+
+    public void setMezunOkul(String mezunOkul) {
+        this.mezunOkul = mezunOkul;
+    }
+
+    public String getMezunBolum() {
+        return mezunBolum;
+    }
+
+    public void setMezunBolum(String mezunBolum) {
+        this.mezunBolum = mezunBolum;
+    }
+
+    public Integer getMezuniyetYil() {
+        return mezuniyetYil;
+    }
+
+    public void setMezuniyetYil(Integer mezuniyetYil) {
+        this.mezuniyetYil = mezuniyetYil;
+    }
+
+    public LocalDate getIsCikisTarihi() {
+        return isCikisTarihi;
+    }
+
+    public void setIsCikisTarihi(LocalDate isCikisTarihi) {
+        this.isCikisTarihi = isCikisTarihi;
+    }
+
+    public String getTelNo() {
+        return telNo;
+    }
+
+    public void setTelNo(String telNo) {
+        this.telNo = telNo;
+    }
+
+    public LocalDate getIsGirisTarihi() {
+        return isGirisTarihi;
+    }
+
+    public void setIsGirisTarihi(LocalDate isGirisTarihi) {
+        this.isGirisTarihi = isGirisTarihi;
     }
 
     public void setPersonelId(String personelId) {

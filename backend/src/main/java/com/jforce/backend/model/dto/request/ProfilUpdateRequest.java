@@ -17,6 +17,8 @@ public record ProfilUpdateRequest(
         @Email
         String ePosta,
         @Size(max = 100)
-        String profilFoto
+        String profilFoto,
+        @Size(max = 20)
+        String telNo
 ) {
 }
