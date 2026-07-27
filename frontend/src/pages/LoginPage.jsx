@@ -27,6 +27,7 @@ function LoginPage() {
 
     if (cevap.ok) {
       const data = await cevap.json();
+      console.log(data);
       localStorage.setItem("token", data.token);
       localStorage.setItem(
         "kullanici",
