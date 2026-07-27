@@ -5,6 +5,7 @@ import com.jforce.backend.model.dto.request.LoginRequest;
 import com.jforce.backend.model.entity.Personel;
 import com.jforce.backend.model.entity.Rol;
 import com.jforce.backend.model.enums.AuditEylem;
+import com.jforce.backend.model.enums.RolAdi;
 import com.jforce.backend.repository.PersonelRepository;
 import com.jforce.backend.service.AuditService;
 import com.jforce.backend.service.AuthService;
@@ -47,7 +48,7 @@ public class AuthServiceTest {
     @BeforeEach
     void setUp() {
         Rol rol = new Rol();
-        rol.setRolAdi("ADMIN");
+        rol.setRolAdi(RolAdi.ADMIN);
 
         personel = new Personel();
         personel.setPersonelId("uuid-123");
@@ -92,7 +93,7 @@ public class AuthServiceTest {
                 .thenReturn(Optional.of(personel));
         when(passwordEncoder.matches("Test1234.", "sahtehash"))
                 .thenReturn(true);
-        when(jwtService.generateToken("uuid-123", "ADMIN"))
+        when(jwtService.generateToken("uuid-123", RolAdi.ADMIN))
                 .thenReturn("sahte-token");
         when(refreshTokenService.createToken(personel))
                 .thenReturn("sahte-refresh-token");
@@ -104,7 +105,7 @@ public class AuthServiceTest {
         assertEquals("sahte-token", loginResult.loginResponse().token());
         assertEquals("Test", loginResult.loginResponse().ad());
         assertEquals("Kullanici", loginResult.loginResponse().soyad());
-        assertEquals("ADMIN", loginResult.loginResponse().rol());
+        assertEquals(RolAdi.ADMIN, loginResult.loginResponse().rol());
         assertEquals("sahte-refresh-token",loginResult.refreshToken());
     }
 

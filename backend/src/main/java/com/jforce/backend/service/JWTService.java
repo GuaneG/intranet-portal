@@ -1,6 +1,7 @@
 package com.jforce.backend.service;
 
 import com.jforce.backend.model.entity.Rol;
+import com.jforce.backend.model.enums.RolAdi;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -27,13 +28,13 @@ public class JWTService {
     }
 
     //bu metodu login anında AuthService çağıracak
-    public String generateToken(String userId,String rol){
+    public String generateToken(String userId, RolAdi rol){
         //token'ı parça parça tarif edip birleştirme
         return Jwts.builder()
                 //payload'a userid yazdık
                 .subject(userId)
                 //kendi özel claimim token'dan rol okunabilsin diye
-                .claim("rol",rol)
+                .claim("rol",rol.name())
                 //üretilme anı
                 .issuedAt(new Date())
                 //token'ın geçersiz olcağı vakit

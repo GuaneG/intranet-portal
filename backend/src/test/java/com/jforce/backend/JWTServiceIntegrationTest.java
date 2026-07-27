@@ -1,5 +1,6 @@
 package com.jforce.backend;
 
+import com.jforce.backend.model.enums.RolAdi;
 import com.jforce.backend.service.JWTService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ public class JWTServiceIntegrationTest  extends AbstractIntegrationTest {
 
     @Test
     void createToken(){
-        String token = jwtService.generateToken("test-user-id","ADMIN");
+        String token = jwtService.generateToken("test-user-id", RolAdi.ADMIN);
         System.out.println(token);
         assertEquals("test-user-id",jwtService.parseToken(token).getSubject());
     }

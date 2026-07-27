@@ -4,6 +4,7 @@ import com.jforce.backend.model.entity.AuditLog;
 import com.jforce.backend.model.entity.Personel;
 import com.jforce.backend.model.entity.Rol;
 import com.jforce.backend.model.enums.AuditEylem;
+import com.jforce.backend.model.enums.RolAdi;
 import com.jforce.backend.repository.AuditLogRepository;
 import com.jforce.backend.service.AuditService;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ public class AuditServiceTest {
     //arrange
     public void setUp() {
         Rol rol = new Rol();
-        rol.setRolAdi("ADMIN");
+        rol.setRolAdi(RolAdi.ADMIN);
 
         personel = new Personel();
         personel.setPersonelId("uuid-123");

@@ -1,5 +1,6 @@
 package com.jforce.backend;
 
+import com.jforce.backend.model.enums.RolAdi;
 import com.jforce.backend.service.JWTService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -14,7 +15,7 @@ public class JWTServiceTest {
 
     @Test
     void generateAndReadToken(){
-        String token = jwtService.generateToken("test-id","ADMIN");
+        String token = jwtService.generateToken("test-id", RolAdi.ADMIN);
         Claims claims = jwtService.parseToken(token);
         System.out.println("1st Assertion: 'test-id' =?" +" "+claims.getSubject());
         assertEquals("test-id",claims.getSubject());
@@ -24,7 +25,7 @@ public class JWTServiceTest {
 
     @Test
     void generateAndReadBadToken(){
-        String token = jwtService.generateToken("test-user","ADMIN");
+        String token = jwtService.generateToken("test-user",RolAdi.ADMIN);
         assertThrows(JwtException.class,() -> jwtService.parseToken(token + "x"));
     }
 }

@@ -1,5 +1,6 @@
 package com.jforce.backend.model.entity;
 
+import com.jforce.backend.model.enums.RolAdi;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,8 +11,9 @@ public class Rol {
     @Column(name = "rol_id")
     private Integer rolId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "rol_adi",length = 50,unique = true,nullable = false)
-    private String rolAdi;
+    private RolAdi rolAdi;
 
     public Integer getRolId() {
         return rolId;
@@ -21,11 +23,11 @@ public class Rol {
         this.rolId = rolId;
     }
 
-    public String getRolAdi() {
+    public RolAdi getRolAdi() {
         return rolAdi;
     }
 
-    public void setRolAdi(String rolAdi) {
+    public void setRolAdi(RolAdi rolAdi) {
         this.rolAdi = rolAdi;
     }
 

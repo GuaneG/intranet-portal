@@ -5,6 +5,7 @@ import com.jforce.backend.model.entity.Personel;
 import com.jforce.backend.model.entity.RefreshToken;
 import com.jforce.backend.model.entity.Rol;
 import com.jforce.backend.model.enums.AuditEylem;
+import com.jforce.backend.model.enums.RolAdi;
 import com.jforce.backend.repository.RefreshTokenRepository;
 import com.jforce.backend.service.AuditService;
 import com.jforce.backend.service.AuthService;
@@ -40,7 +41,7 @@ public class RefreshTokenServiceTest {
         refreshTokenService = new RefreshTokenService(1209600000L, refreshTokenRepository,auditService);
 
         Rol rol = new Rol();
-        rol.setRolAdi("ADMIN");
+        rol.setRolAdi(RolAdi.ADMIN);
 
         personel = new Personel();
         personel.setPersonelId("uuid-123");
