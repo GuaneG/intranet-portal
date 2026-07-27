@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,12 +18,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity //@PreAuth, @PostAuth anotasyonlarını aktif eder metod bazlı koruma yapcağız, @PreAuthorize("hasRole('ADMIN')")
+                      //önceki satırda yazdığım anotasyon controller/service metoduna koyulur,hasRole('ADMIN') JWTFilter'de oluşturduğumuz
+                      //authority'ye bakar -> ROLE_ADMIN arar
 public class SecurityConfig {
     private final JWTFilter jwtFilter;
+    private final RateLimitFilter rateLimitFilter;
 
 
-    public SecurityConfig(JWTFilter jwtFilter) {
+    public SecurityConfig(JWTFilter jwtFilter, RateLimitFilter rateLimitFilter) {
         this.jwtFilter = jwtFilter;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
 
@@ -35,7 +41,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/refresh","/api/auth/logout","/api/auth/login","/swagger-ui.html","/swagger-ui/**","/v3/api-docs/**").permitAll().anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint( //gelen 403 req -> 401 çevirme
                 (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitFilter, JWTFilter.class); //rate limiter filtresi
         return http.build();
     }
 
