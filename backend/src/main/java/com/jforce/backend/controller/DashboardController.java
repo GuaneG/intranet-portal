@@ -15,7 +15,7 @@ public class DashboardController {
 
     public DashboardController(DashboardService dashboardService) {
         this.dashboardService = dashboardService;
-    }
+    }                                               //Spring jwtfilter'ın context'e koyduğu objeyi ayıp bu parametreye enjekte eder
                                                     //bu obje o an giriş yapmış kullanıcıyı temsil eden Spring Security objesi
     @GetMapping("/ozet")                          //bu kodla "SecurityContextHolder.getContext().setAuthentication(authentication);" oluşturduğumuz objeyi alıyoruz
     public DashboardOzetResponse getDashboardOzet(Authentication authentication) {

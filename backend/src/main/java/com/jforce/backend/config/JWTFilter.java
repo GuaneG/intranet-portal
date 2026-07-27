@@ -47,11 +47,14 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        //bir yetki etiketi taşıyan basit bir nesnedir
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + rol);
+        //bir yetki etiketi taşıyan basit bir nesnedir                                     //SimpleGrantedAuthority("ROLE_"+rol) = "bu kullanıcının şu yetkisi/rolü var" nesnesi.
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + rol); //hasRole/@PreAuthorize bunlara bakar. ("ROLE_" prefix'i hasRole'ün beklediği konvansiyon.) → "ne yapabilir" etiketi.
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(sub,null, List.of(authority));
-
+        //UsernamePasswordAuthenticationToken(sub, null, authorities) = Spring'in standart "kimliği doğrulanmış kullanıcı" nesnesi.
+        // Üç parça: kim (sub=personelId), credentials (null — token'ı doğruladıktan sonra parolayı/secret'ı saklamaya gerek yok),
+        // ne yapabilir (authorities). (3 argümanlı bu constructor, nesneyi "authenticated" olarak işaretler.)
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        //bu nesneyi o isteğe ait bir "context"e koyar. → "bu isteğin sahibi X, rolü Y."
         filterChain.doFilter(request,response);
     }
 }
