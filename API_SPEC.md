@@ -6,8 +6,8 @@
 ## Conventions
 
 - Base path: `/api`
-- Auth: `POST /api/auth/login` hariç tüm endpoint'ler JWT Bearer token ister
-- Roller: `Personel`, `Yönetici`, `Admin` | Admin tüm menülere yetkili
+- Auth: login, refresh, logout ve ilk parola değiştirme endpoint’leri Spring Security açısından `permitAll` durumundadır. Login ve ilk parola değiştirme credential; refresh/logout ise `httpOnly` refresh cookie üzerinden kendi doğrulamasını yapar. Diğer endpoint’ler JWT Bearer token ister.
+- Roller: `Personel`, `Yönetici`, `HR`, `Admin` | Admin tüm menülere yetkili
 - `(owner)` = kaydı oluşturan kişi; service katmanında `kayit.personelId == token.personelId` kontrolü
 
 ## Status Codes
@@ -16,11 +16,15 @@
 |------|--------|-------|
 | 200 | OK | Listeleme, güncelleme başarılı |
 | 201 | Created | POST ile kayıt oluştu |
+| 204 | No Content | İşlem başarılı, response body yok |
 | 400 | Bad Request | Validation hatası (bitiş < başlangıç gibi) |
 | 401 | Unauthorized | Token yok / geçersiz / süresi dolmuş |
 | 403 | Forbidden | Token geçerli ama rol/ownership yetmiyor |
 | 404 | Not Found | Kayıt yok |
 | 409 | Conflict | Çakışan rezervasyon, duplicate kayıt |
+| 428 | Precondition Required | İlk girişte parola değişikliği zorunlu |
+
+Authentication ve authorization hataları ortak `ErrorResponse` gövdesini kullanır: `status`, kontrollü `message`, `timestamp` ve istek `path` değeri.
 
 ---
 
@@ -28,10 +32,21 @@
 
 | Method | Endpoint | Role |
 |--------|----------|------|
-| POST | `/api/auth/login` | herkes (token'sız tek endpoint) |
+| POST | `/api/auth/login` | herkes |
+| POST | `/api/auth/refresh` | refresh cookie sahibi |
+| POST | `/api/auth/logout` | herkes; cookie yoksa da idempotent |
+| PATCH | `/api/auth/ilk-parola` | herkes; credential doğrulaması ve rate limit uygulanır |
 
 - Login response: `{ token, ad, soyad, rol }` frontend menüyü role göre kurar
-- Logout: stateless JWT olduğu için server-side işlem yok, client token'ı siler.
+- Başarılı login response body’sinde access token döner; ham refresh token body’ye yazılmaz, `httpOnly` cookie olarak gönderilir.
+- Pasif personel doğru parola kullansa bile login ile yeni token alamaz.
+- Doğru credential kullanan fakat `parolaDegistirmeliMi=true` olan personelin login isteği `428` döner; access token, refresh token/cookie ve başarılı/başarısız login audit kaydı üretilmez.
+- İlk parola değiştirme request’i `{ kullaniciAdi, mevcutParola, yeniParola }` biçimindedir. Başarılı işlem flag’i kapatır, personele ait refresh tokenları siler, audit kaydı oluşturur ve `204 No Content` döner.
+- `/api/auth/ilk-parola` endpoint’i IP ve path bazında dakikada 5 istekle sınırlandırılır.
+- Refresh isteği `refreshToken` cookie’sini kullanır; geçerli token rotate edilir, eski token revoked olur, yeni access token body’de ve yeni refresh token cookie’de döner.
+- Pasif personelin refresh isteği reddedilir ve personele ait refresh token kayıtları silinir.
+- Logout, cookie’deki refresh token kaydını sunucuda siler, `LOGOUT` audit olayı üretir ve cookie’yi `maxAge=0` ile temizler. Cookie yoksa da 204 döner.
+
 **Örnek — login:**
 
 ```
@@ -41,7 +56,7 @@ Content-Type: application/json
 { "kullaniciAdi": "can.gere", "parola": "****" }
 
 -> 200 OK
-{ "token": "eyJhbGciOiJIUzI1...", "ad": "Can", "soyad": "Gere", "rol": "Personel" }
+{ "token": "eyJhbGciOiJIUzI1...", "ad": "Can", "soyad": "Gere", "rol": "PERSONEL" }
 
 -> 401 Unauthorized (kullanıcı adı/parola yanlış)
 ```
@@ -203,20 +218,42 @@ POST /api/leave-requests
 | GET    | `/api/personnel?department=&skill=` | tüm roller (ekip dizini) |
 | POST   | `/api/profile/me/photo`             | tüm roller |
 | DELETE | `/api/profile/me/photo`             | tüm roller |
+| POST   | `/api/hr/personel`                  | HR, admin |
+| PATCH  | `/api/hr/personel/{personelId}`     | HR, admin |
+| PATCH  | `/api/profil/parola`                | authenticated tüm roller |
+| PATCH  | `/api/admin/personel/{personelId}/rol` | admin |
 
 
 
 - PATCH body'sinde rol ve sicil_no kabul edilmez
+- Personel oluşturma request’i `{ kullaniciAdi, ad, soyad, dogumTarihi, ePosta, departmanId, isGirisTarihi, yoneticiId? }` biçimindedir. Rol, parola, sicil numarası ve diğer server-controlled alanlar kabul edilmez.
+- Yeni personelin rolü sunucu tarafından `PERSONEL`, ilk parolası normalize edilmiş kullanıcı adının BCrypt hash’i ve `parolaDegistirmeliMi` değeri `true` olarak belirlenir.
+- `sicil_numarasi` MySQL tarafından `AUTO_INCREMENT` ile üretilir. `departmanId` zorunlu, `yoneticiId` opsiyoneldir; gönderilen yönetici mevcut, aktif, `YONETICI` rolünde ve yeni personelle aynı departmanda olmalıdır.
+- Kullanıcı adı ve e-posta normalize edilir; mevcut değerle çakışma `409 Conflict` döner. Başarılı oluşturma `{ personelId, kullaniciAdi }` gövdesiyle `201 Created` döner ve `PERSONEL_EKLENDI` audit kaydı oluşturur.
+- Personel güncelleme request’i kısmi PATCH semantiği kullanır. Güncellenebilir alanlar `{ ad, soyad, dogumTarihi, ePosta, departmanId, isGirisTarihi, yoneticiId, telNo, mezunOkul, mezunBolum, mezuniyetYili }` biçimindedir; yalnız gönderilen alanlar değerlendirilir.
+- Güncelleme sırasında `ad`, `soyad`, `dogumTarihi`, `ePosta`, `departmanId` ve `isGirisTarihi` alanları gönderilirse `null` olamaz. `yoneticiId`, `telNo`, `mezunOkul`, `mezunBolum` ve `mezuniyetYili` açıkça `null` gönderilerek temizlenebilir. Boş metin temizleme anlamına gelmez.
+- `personelId`, `kullaniciAdi`, `sicilNumarasi`, rol, parola, aktiflik, işten çıkış tarihi, profil fotoğrafı ve yıllık izin hakkı bu güncelleme endpoint’iyle değiştirilemez.
+- Departman gerçekten değiştiriliyorsa aynı request içinde `yoneticiId` alanı da gönderilmelidir. Değer yeni departmandaki aktif bir `YONETICI` rolünün ID’si olabilir veya mevcut yöneticiyi kaldırmak için `null` gönderilebilir.
+- Atanacak yönetici hedef personelin kendisi olamaz; aktif, `YONETICI` rolünde ve güncelleme sonrasındaki departmanla aynı departmanda olmalıdır. Yönetici, departman değişmeden de tek başına güncellenebilir veya `null` ile kaldırılabilir.
+- Güncellemede e-posta normalize edilir; hedef dışındaki bir personelle çakışması `409 Conflict` döner. Boş request ve geçersiz ilişki kuralları `400`, bulunamayan hedef/departman/yönetici `404` döner.
+- Başarılı personel güncellemesi `204 No Content` döner ve yalnız değişen alan adlarını içeren `PERSONEL_GUNCELLENDI` audit kaydı oluşturur. Mevcut değerlerin tekrar gönderildiği idempotent istek `204` döner, persistence veya audit yan etkisi oluşturmaz.
+- Normal parola değiştirme request’i `{ mevcutParola, yeniParola }` biçimindedir; personel kimliği JWT principal’dan alınır. Başarılı işlem bütün refresh tokenları siler, `PAROLA_DEGISTIRILDI` audit kaydı oluşturur ve `204 No Content` döner.
+- Yeni parola 8–72 karakter olmalı, UTF-8 karşılığı 72 byte’ı aşmamalı; küçük harf, büyük harf, rakam ve özel karakter içermeli, boşluk içermemeli, kullanıcı adı veya mevcut parolayla aynı olmamalıdır.
 - Skill ekleme için PUT kullanıyoruz çünkü, birden fazla skill eklenmeye çalıştığında PATCH çalışmaz.
 - Ekip dizini DTO'su: ad-soyad, departman, yetenekler, foto
+- Rol değiştirme request body’si `{ "rol": "HR" }` biçimindedir. İşlemi yapan Admin JWT principal’dan, hedef personel path’teki `personelId` değerinden alınır.
+- Aynı rol tekrar istenirse işlem idempotent biçimde `204 No Content` döner; token veya audit yan etkisi oluşturmaz.
+- Admin kendi rolünü ve mevcut başka bir Admin’in rolünü değiştiremez; bu istekler `403 Forbidden` döner.
+- Başarılı rol değişikliğinde hedef personelin bütün refresh token kayıtları silinir ve aktör ile hedefi ilişkilendiren `ROL_DEGISTIRILDI` audit kaydı oluşturulur.
+- Stateless access token anında iptal edilmez; eski token kalan ömrü boyunca, en fazla 15 dakika çalışabilir.
 
 ---
 
 ## Dashboard
 
-| Method | Endpoint | Role |
-|--------|----------|------|
-| GET | `/api/dashboard/summary` | tüm roller |
+| Method | Endpoint              | Role |
+|--------|-----------------------|------|
+| GET | `/api/dashboard/ozet` | tüm roller |
 
 - Tüm kartlar tek istekte, tek DTO: `{ bugunDogumGunleri[], sonDuyurular[], kalanIzin, bugunIzinliSayisi, odaDoluluk[], sonTakdirler[], bekleyenTaleplerim[] }`
 - Role göre içerik: Yönetici/Admin'de `kalanIzin` dönmez (izin talep edemiyorlar)  endpoint aynı, DTO içeriği role göre dolar

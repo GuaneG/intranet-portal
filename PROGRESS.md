@@ -156,3 +156,74 @@
   logout / role change (the access-token-leak concern).
 - Created a task backlog (16 items) for the remaining security / hardening / feature work.
 - Next: #1 access-token 15-min window mitigation; write the deleteExpiredTokens integration test; #7 Personel entity extension.
+
+### Day 18 - 28.07.2026
+- Completed the authentication-hardening work in Roadmap Stage 0, including the shared Spring context/Testcontainers lifecycle fix.
+- Prevented inactive personnel from receiving new tokens through both login and refresh.
+- Inactive refresh attempts now remove all refresh-token rows for that personnel while still returning a controlled 401; the `noRollbackFor` transaction behavior was verified against real MySQL.
+- Added a Testcontainers integration test proving scheduled cleanup removes expired refresh tokens and preserves valid ones.
+- Added controller/HTTP integration tests for inactive login and refresh, including the absence of a replacement refresh cookie.
+- Replaced Spring Security's empty `sendError(401)` response with a JSON `AuthenticationEntryPoint` using the shared `ErrorResponse` shape.
+- Added a specific `AccessDeniedException` handler so method-security failures return 403 instead of falling through to the generic 500 handler.
+- Added HTTP integration coverage for:
+    - unauthenticated request → 401 JSON,
+    - authenticated `PERSONEL` request to an `ADMIN` method → 403 JSON.
+- Reviewed controlled authentication messages and kept framework, SQL and internal exception details out of client responses.
+- Updated `SECURITY.md`, `API_SPEC.md` and `ROADMAP.md` to match the implemented refresh-cookie, server-side logout, inactive-personnel and 401/403 behavior.
+- Verification completed for the focused authentication set: 13 unit tests, 4 auth/security HTTP integration tests and 2 refresh-token MySQL integration tests passed.
+- Full backend verification passed with Testcontainers: 23 tests, 0 failures, 0 errors and 0 skipped.
+- Learned:
+    - `AuthenticationEntryPoint` formats failures for users whose identity was not established (401).
+    - `@PreAuthorize` runs after authentication and raises an access-denied exception when authority is insufficient (403).
+    - A catch-all exception handler can accidentally turn expected authorization failures into 500 unless a more specific handler exists.
+    - Request `Cookie` and response `Set-Cookie` represent opposite directions of the HTTP cookie flow.
+
+### Day 19 - 29.07.2026
+- Added `HR` to the fixed role model and verified that JWT authority handling supports it.
+- Implemented the Admin-only `PATCH /api/admin/personel/{personelId}/rol` flow.
+- Added role-change rules: an Admin cannot change their own role or another existing Admin’s role; requesting the current role is idempotent.
+- Successful role changes now revoke all refresh tokens belonging to the target personnel.
+- Added `ROL_DEGISTIRILDI` audit records with separate actor and target personnel relationships.
+- Split audit transaction behavior deliberately:
+    - login/logout/token security events remain independent with `REQUIRES_NEW`,
+    - successful role-change audit joins the role-change transaction with `REQUIRED`.
+- Added Mockito service tests and HTTP/MySQL Testcontainers integration tests covering authorization, validation, successful persistence, refresh-token revocation, audit actor/target data and rollback behavior.
+- Verified that role change, refresh-token deletion and audit persistence roll back together when an outer transaction fails.
+- Learned:
+    - JPA dirty checking persists the managed personnel role change at transaction commit without an explicit second `save`.
+    - Test-only transaction helpers must be called through a Spring-managed bean so the transaction proxy is active.
+    - A broad `assertThrows(RuntimeException.class)` can hide a `NullPointerException` and produce a false-positive test; expect the narrowest intentional exception.
+- Next: implement the HR personnel creation flow.
+### Day 20 - 29.07.2026
+- Implemented `POST /api/hr/personel` for HR/Admin with required department, optional manager and required birth date.
+- New personnel are created with server-controlled `PERSONEL` role, active status, normalized username/e-mail, BCrypt initial password and `parolaDegistirmeliMi=true`.
+- Moved personnel registry-number generation out of the request: MySQL now generates unique `sicil_numarasi` values with `AUTO_INCREMENT`.
+- Added duplicate protection for normalized username and e-mail, including a controlled `409 Conflict` response for database race conditions.
+- Added first-login password enforcement:
+    - normal login returns `428` without access/refresh tokens or login audit while the flag is open,
+    - `PATCH /api/auth/ilk-parola` verifies credentials, applies the password policy, closes the flag, revokes refresh tokens and writes audit in one transaction.
+- Added authenticated `PATCH /api/profil/parola` so personnel can change their password later; personnel identity comes from the JWT principal rather than the request.
+- Added `PERSONEL_EKLENDI` and `PAROLA_DEGISTIRILDI` audit events without storing raw passwords or hashes in audit details.
+- Added unit and Testcontainers HTTP/integration coverage for HR authorization, normalized duplicates, DB-generated registry numbers, BCrypt storage, mandatory first-password flow, normal login after the change, refresh-token revocation and audit persistence.
+- Full backend verification reported by the developer: 41 tests, 0 failures, 0 errors and 0 skipped; build successful.
+- Learned:
+    - MySQL requires an `AUTO_INCREMENT` column to be indexed when the table is created; declaring inline `UNIQUE` avoided Hibernate trying to add the key only after table creation.
+    - A lazy JPA relationship cannot safely be traversed after its repository transaction has closed; tests should reload the related entity or query the needed data instead of changing the mapping to `EAGER` merely for assertions.
+    - BCrypt’s 72-byte input limit is separate from user-facing character length, so both constraints are validated while the UI can still explain the ordinary 8–72 character rule.
+- Next: implement HR personnel update/deactivation and then the remaining profile fields and team-directory flow.
+
+### Day 21 - 29.07.2026
+- Implemented `PATCH /api/hr/personel/{personelId}` for HR/Admin with partial-update semantics.
+- Added field-presence tracking so an omitted field preserves its current value while explicit `null` clears supported nullable fields.
+- Limited the update request to HR-managed profile and employment fields; personel ID, username, registry number, role, password, active status and exit date remain server-controlled or belong to separate flows.
+- Added normalized e-mail conflict checking that excludes the target personnel and converts database race conflicts to controlled `409 Conflict` responses.
+- Added department/manager consistency rules:
+    - a real department change must include the manager field,
+    - `yoneticiId: null` removes the manager,
+    - an assigned manager must be active, have the `YONETICI` role and belong to the effective department,
+    - personnel cannot be assigned as their own manager.
+- Reused the same active-role-department manager validation in the personnel creation flow.
+- Added `PERSONEL_GUNCELLENDI` audit records with actor/target relationships and only the changed field names; no-op updates return `204` without persistence or audit side effects.
+- Added HTTP/MySQL integration coverage for partial updates, explicit null clearing, validation, authorization, e-mail conflict, department/manager rules, missing resources, no-op behavior, audit persistence and manager validation during creation.
+- Full backend verification reported by the developer: 61 tests, 0 failures, 0 errors and 0 skipped; build successful.
+- Next: implement the separate HR personnel deactivation flow.
