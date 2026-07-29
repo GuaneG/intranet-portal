@@ -1,10 +1,11 @@
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 
-// ProtectedRoute'un tersi: token VARSA (giriş yapılmışsa) login'i gösterme, dashboard'a at
+// ProtectedRoute'un tersi: giriş YAPILMIŞSA (token varsa) login sayfasını gösterme,
+// dashboard'a (/) yolla. Böylece login'li kullanıcı /signin'i göremez.
 function PublicRoute({ children }) {
-  const token = localStorage.getItem("token"); // giriş yapılmış mı? (token var mı)
+  const token = localStorage.getItem("token");
   if (token) {
-    return <Navigate to="/dashboard" replace />; // giriş yapmış kullanıcıyı login'den uzaklaştır
+    return <Navigate to="/" replace />; // TailAdmin'de dashboard "/"
   }
   return children; // giriş yapılmamışsa normal login sayfasını göster
 }

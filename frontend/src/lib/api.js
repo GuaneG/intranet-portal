@@ -42,10 +42,6 @@ export async function apiFetch(path, options = {}) {
   //bu önemli çünkü tekrar denemede localStorage'daki YENİ token gitmeli (eskisi değil)
   //DİKKAT: gövde birden çok satır olduğu için süslü parantez + return ŞART
   const istekYap = () => {
-    //for debug console.log(
-    //   "[apiFetch] istekYap çalıştı, token:",
-    //   localStorage.getItem("authToken")?.slice(0, 15),
-    // );
     return fetch(`${BASE_URL}${path}`, {
       ...options, //çağıranın verdiği method/body vs aynen korunur
       headers: {
@@ -56,32 +52,24 @@ export async function apiFetch(path, options = {}) {
   };
 
   let cevap = await istekYap();
-  //for debug console.log("[apiFetch] ilk cevap status:", cevap.status);
 
   //401 DEĞİLSE iş bitti access token hala geçerli refresh dünyası hiç devreye girmez
   if (cevap.status !== 401) {
-    //for debug console.log("[apiFetch] 401 değil, refresh'e gerek yok, cevap dönülüyor");
     return cevap;
   }
 
-  //for debug console.log("[apiFetch] 401 geldi -> sessiz refresh deneniyor");
   //401 geldi: access token ölmüş olabilir -> sessiz yenilemeyi dene
   try {
     await refreshAccessToken();
-    //for debug console.log("[apiFetch] refresh BAŞARILI, yeni token alındı");
   } catch (e) {
-    //for debug    //console.log(
-    //    //  "[apiFetch] refresh PATLADI -> oturum bitti (sızma / süre dolmuş / logout'lu), login'e atılıyor",
-    //    //);
     //refresh de patladı -> oturum GERÇEKTEN bitti (logout'lu / süresi dolmuş / alarm yemiş)
     //temizlik yap, login'e yönlendir
     localStorage.removeItem("token");
     localStorage.removeItem("kullanici");
     sessionStorage.setItem("authMesaji", e.message); //sayfa yenilenince errorresponse message kaybolmasın diye köprü
-    window.location.href = "/login";
+    window.location.href = "/signin"; // TailAdmin'de login rotası /signin
     return cevap;
   }
-  //for debug console.log("[apiFetch] refresh başarıyla tamamlandı istek yapılıyor");
   //refresh başarılı -> orijinal isteği yeni token'la 1 kez daha tekrarla
   return istekYap();
 }
