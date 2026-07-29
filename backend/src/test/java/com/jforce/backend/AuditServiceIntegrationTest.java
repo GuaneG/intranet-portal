@@ -22,7 +22,7 @@ public class AuditServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void auditLogBasarisizLoginTest(){
-        auditService.logKaydet(AuditEylem.LOGIN_BASARISIZ,null,"placeholder","placeholder");
+        auditService.logKaydet(AuditEylem.LOGIN_BASARISIZ,null,"placeholder","placeholder",null);
         List<AuditLog> auditLogs = auditLogRepository.findAll();
 
             AuditLog testObj = auditLogs.getFirst();

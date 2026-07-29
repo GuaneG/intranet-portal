@@ -1,16 +1,14 @@
 package com.jforce.backend;
 
 import com.jforce.backend.exception.BadCredentialsException;
+import com.jforce.backend.exception.ParolaDegisikligiGerekliException;
 import com.jforce.backend.model.dto.request.LoginRequest;
 import com.jforce.backend.model.entity.Personel;
 import com.jforce.backend.model.entity.Rol;
 import com.jforce.backend.model.enums.AuditEylem;
 import com.jforce.backend.model.enums.RolAdi;
 import com.jforce.backend.repository.PersonelRepository;
-import com.jforce.backend.service.AuditService;
-import com.jforce.backend.service.AuthService;
-import com.jforce.backend.service.JWTService;
-import com.jforce.backend.service.RefreshTokenService;
+import com.jforce.backend.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,8 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) //mockito anotsayonlarını getir
 public class AuthServiceTest {
@@ -34,7 +31,7 @@ public class AuthServiceTest {
     @Mock
     PersonelRepository personelRepository;
     @Mock
-    PasswordEncoder passwordEncoder;
+    ParolaService parolaService;
     @Mock
     RefreshTokenService refreshTokenService;
     @Mock
@@ -57,6 +54,11 @@ public class AuthServiceTest {
         personel.setAdi("Test");
         personel.setSoyadi("Kullanici");
         personel.setRol(rol);
+        personel.setCalisiyorMu(true);
+
+        when(parolaService.kullaniciAdiniNormalizeEt(anyString()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
     }
 
     @Test
@@ -71,27 +73,27 @@ public class AuthServiceTest {
         LoginRequest loginRequest = new LoginRequest("yok", "Test1234.");
         //act + assert: login çağrısı act, assertThrows içi excp beklentisi assert
         assertThrows(BadCredentialsException.class , () -> authService.login(loginRequest));
-        verify(auditService).logKaydet(eq(AuditEylem.LOGIN_BASARISIZ), isNull(), anyString(), anyString());
+        verify(auditService).logKaydet(eq(AuditEylem.LOGIN_BASARISIZ), isNull(), anyString(), anyString(),isNull());
     }
 
     @Test
     void throwBadCredentialsWhenBadPassword() {
         when(personelRepository.findByKullaniciAdi("test.kullanici"))
                 .thenReturn(Optional.of(personel));
-        when(passwordEncoder.matches("yanlisParola", "sahtehash"))
+        when(parolaService.eslesiyorMu("yanlisParola", "sahtehash"))
                 .thenReturn(false);
 
         LoginRequest request = new LoginRequest("test.kullanici", "yanlisParola");
 
         assertThrows(BadCredentialsException.class, () -> authService.login(request));
-        verify(auditService).logKaydet(eq(AuditEylem.LOGIN_BASARISIZ), isNull(), anyString(), anyString());
+        verify(auditService).logKaydet(eq(AuditEylem.LOGIN_BASARISIZ), isNull(), anyString(), anyString(),isNull());
     }
 
     @Test
     void successFullLogin() {
         when(personelRepository.findByKullaniciAdi("test.kullanici"))
                 .thenReturn(Optional.of(personel));
-        when(passwordEncoder.matches("Test1234.", "sahtehash"))
+        when(parolaService.eslesiyorMu("Test1234.", "sahtehash"))
                 .thenReturn(true);
         when(jwtService.generateToken("uuid-123", RolAdi.ADMIN))
                 .thenReturn("sahte-token");
@@ -107,6 +109,48 @@ public class AuthServiceTest {
         assertEquals("Kullanici", loginResult.loginResponse().soyad());
         assertEquals(RolAdi.ADMIN, loginResult.loginResponse().rol());
         assertEquals("sahte-refresh-token",loginResult.refreshToken());
+    }
+
+    @Test
+    void pasifPersonelDogruParolaylaLoginOlamaz(){
+        //inaktif personel
+        personel.setCalisiyorMu(Boolean.FALSE);
+        //when(...): Gelecekteki çağrıya cevap hazırlar → önce yazılır.
+        when(personelRepository.findByKullaniciAdi("test.kullanici"))
+                .thenReturn(Optional.of(personel));
+        when(parolaService.eslesiyorMu("Test1234.", "sahtehash"))
+                .thenReturn(true);
+
+        LoginRequest request = new LoginRequest("test.kullanici", "Test1234.");
+        //assertThrows(...): Test edilen metodu çalıştırır.
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> authService.login(request));
+        //Hesabın pasif olduğu istemciye açıklanmaz.
+        assertEquals("Kullanıcı adı veya parola hatalı.",exception.getMessage());
+
+        //verify(...): Geçmişteki çağrıyı kontrol eder → sonra yazılır.
+        //şu ana kadar çağrıldımı kontrol için var o yüzden test edilcek metod çağırılmasından öncesine konulamaz
+        verify(auditService).logKaydet(eq(AuditEylem.LOGIN_BASARISIZ), eq(personel), anyString(), anyString(),isNull());
+
+        //access veya refresh token üretilmedi.
+        verifyNoInteractions(jwtService,refreshTokenService);
+    }
+
+    @Test
+    void parolaDegisikligiGerekenPersonelTokenAlamaz() {
+        personel.setParolaDegistirilmeliMi(true);
+
+        when(personelRepository.findByKullaniciAdi("test.kullanici"))
+                .thenReturn(Optional.of(personel));
+
+        when(parolaService.eslesiyorMu("Test1234.", "sahtehash"))
+                .thenReturn(true);
+
+        LoginRequest request = new LoginRequest("test.kullanici", "Test1234.");
+
+        assertThrows(ParolaDegisikligiGerekliException.class, () -> authService.login(request));
+
+        verifyNoInteractions(jwtService, refreshTokenService);
+        verifyNoInteractions(auditService);
     }
 
 }

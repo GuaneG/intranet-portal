@@ -2,6 +2,7 @@ package com.jforce.backend;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -10,6 +11,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @ActiveProfiles("test")           // application-test.properties devreye girsin (jwt.secret, ve db_password üstüne yazılsın diye)
 @Testcontainers                   // JUnit 5 eklentisi: @Container yaşam döngüsünü yönetir
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS) // Her test sınıfından sonra context cache'ini temizler; sonraki sınıf çalışan container'a yeniden bağlanır
 public abstract class AbstractIntegrationTest {
 
     @Container

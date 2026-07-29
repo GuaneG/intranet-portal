@@ -1,6 +1,8 @@
 package com.jforce.backend.service;
 
 import com.jforce.backend.exception.BadCredentialsException;
+import com.jforce.backend.exception.GecersizIstekException;
+import com.jforce.backend.exception.ParolaDegisikligiGerekliException;
 import com.jforce.backend.model.dto.request.LoginRequest;
 import com.jforce.backend.model.dto.response.LoginResponse;
 import com.jforce.backend.model.entity.Personel;
@@ -13,14 +15,14 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final JWTService jwtService;
     private final PersonelRepository personelRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final ParolaService parolaService;
     private final RefreshTokenService refreshTokenService;
     private final AuditService auditService;
 
-    public AuthService(JWTService jwtService, PersonelRepository personelRepository, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService, AuditService auditService) {
+    public AuthService(JWTService jwtService, PersonelRepository personelRepository, ParolaService parolaService, RefreshTokenService refreshTokenService, AuditService auditService) {
         this.jwtService = jwtService;
         this.personelRepository = personelRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.parolaService = parolaService;
         this.refreshTokenService = refreshTokenService;
         this.auditService = auditService;
     }
@@ -31,19 +33,49 @@ public class AuthService {
 
 
     public LoginResult login(LoginRequest loginRequest) {
-        Personel personel = personelRepository.findByKullaniciAdi(loginRequest.kullaniciAdi()).orElse(null);
-        if ( personel == null || !passwordEncoder.matches(loginRequest.parola(), personel.getParolaHash())){
-            auditService.logKaydet(AuditEylem.LOGIN_BASARISIZ,null, loginRequest.kullaniciAdi(),"hatalı uname/parola");
-            throw new BadCredentialsException("Kullanıcı adı veya parola hatalı.");
-        }
+            String kullaniciAdi;
+            try {
+                kullaniciAdi = parolaService.kullaniciAdiniNormalizeEt(loginRequest.kullaniciAdi());
+            } catch (GecersizIstekException exception) {
+                auditService.logKaydet(AuditEylem.LOGIN_BASARISIZ, null, loginRequest.kullaniciAdi(), "Hatalı kullanıcı adı/parola.", null);
+                throw new BadCredentialsException("Kullanıcı adı veya parola hatalı.");
+            }
+
+            Personel personel = personelRepository.findByKullaniciAdi(kullaniciAdi).orElse(null);
+
+            if (personel == null || !parolaService.eslesiyorMu(loginRequest.parola(), personel.getParolaHash())) {
+                auditService.logKaydet(
+                        AuditEylem.LOGIN_BASARISIZ,
+                        null,
+                        kullaniciAdi,
+                        "Hatalı kullanıcı adı/parola.",
+                        null
+                );
+
+                throw new BadCredentialsException("Kullanıcı adı veya parola hatalı.");
+            }
+
+            //kullanıcı aktif mi
+            if (!Boolean.TRUE.equals(personel.getCalisiyorMu())) {
+                auditService.logKaydet(AuditEylem.LOGIN_BASARISIZ, personel, personel.getKullaniciAdi(), "İnaktif kullanıcı giriş yapmaya çalıştı.", null);
+
+                throw new BadCredentialsException("Kullanıcı adı veya parola hatalı.");
+            }
+
+            //ilk girişte parolasını değiştirdimi
+            if (personel.getParolaDegistirilmeliMi()) {
+                throw new ParolaDegisikligiGerekliException("İlk girişte parola değişikliği gerekli.");
+            }
+
+            // Mevcut refresh token, başarılı audit ve response kodu
+            // bundan sonra aynı şekilde devam eder.
         String rawRefreshToken = refreshTokenService.createToken(personel);
-        auditService.logKaydet(AuditEylem.LOGIN_BASARILI,personel, personel.getKullaniciAdi(), "Login başarılı.");
+        auditService.logKaydet(AuditEylem.LOGIN_BASARILI,personel, personel.getKullaniciAdi(), "Login başarılı.",null);
         return new LoginResult(
                 new LoginResponse(jwtService.generateToken(personel.getPersonelId(), personel.getRol().getRolAdi())
                 ,personel.getAdi()
                 ,personel.getSoyadi()
-                ,personel.getRol().getRolAdi()),rawRefreshToken)
-        ;
+                ,personel.getRol().getRolAdi()),rawRefreshToken);
     }
 
     //hem refresh token hem access token(jwt) dönebilmek için record
@@ -60,6 +92,6 @@ public class AuthService {
 
     public void logout(String rawRefreshToken){
         Personel p = refreshTokenService.revokeToken(rawRefreshToken);
-        auditService.logKaydet(AuditEylem.LOGOUT,p,p != null ? p.getKullaniciAdi() : null,"Çıkış yapıldı");
+        auditService.logKaydet(AuditEylem.LOGOUT,p,p != null ? p.getKullaniciAdi() : null,"Çıkış yapıldı",null);
     }
 }

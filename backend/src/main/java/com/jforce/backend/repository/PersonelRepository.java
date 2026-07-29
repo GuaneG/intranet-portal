@@ -9,9 +9,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PersonelRepository extends JpaRepository<Personel,String> {
-    //query derivation ile doğum günü olanları bulamayacağımız için kendimiz JPQL ile özel sorgu yazdık
-    @Query("SELECT p FROM Personel p JOIN FETCH p.departman " +
+        //query derivation ile doğum günü olanları bulamayacağımız için kendimiz JPQL ile özel sorgu yazdık
+        @Query("SELECT p FROM Personel p JOIN FETCH p.departman " +
             "WHERE MONTH(p.dogumTarihi) = :ay AND DAY(p.dogumTarihi) = :gun AND p.calisiyorMu = true")
-    List<Personel> findByDogumGunu(@Param("ay") int ay, @Param("gun") int gun);
-     Optional<Personel> findByKullaniciAdi(String kullaniciAdi);
+        List<Personel> findByDogumGunu(@Param("ay") int ay, @Param("gun") int gun);
+
+        Optional<Personel> findByKullaniciAdi(String kullaniciAdi);
+
+        //aynı kullanıcı varmı kontrol
+        boolean existsByKullaniciAdiIgnoreCase(String kullaniciAdi);
+
+        //aynı e posta varmı kontrol
+        boolean existsByEPostaIgnoreCase(String ePosta);
+
+        //başka personellerde aynı eposta varmı kontrol
+        boolean existsByEPostaIgnoreCaseAndPersonelIdNot(String ePosta, String personelId);
 }

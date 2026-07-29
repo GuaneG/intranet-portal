@@ -1,11 +1,13 @@
 package com.jforce.backend.controller;
 
 import com.jforce.backend.exception.InvalidRefreshTokenException;
+import com.jforce.backend.model.dto.request.IlkParolaDegistirRequest;
 import com.jforce.backend.model.dto.request.LoginRequest;
 import com.jforce.backend.model.dto.response.LoginResponse;
 
 import com.jforce.backend.model.dto.response.RefreshResponse;
 import com.jforce.backend.service.AuthService;
+import com.jforce.backend.service.ParolaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -20,9 +22,12 @@ public class AuthController {
     //cookie'nin maxAge'ini hesaplamak için süre lazım; cookie HTTP detayı olduğu için süresi de burada (service'te değil)
     private final long refreshExpirationMs;
 
-    public AuthController(AuthService authService, @Value("${jwt.refresh-expiration}") long refreshExpirationMs) {
+    private final ParolaService parolaService;
+
+    public AuthController(AuthService authService, @Value("${jwt.refresh-expiration}") long refreshExpirationMs, ParolaService parolaService) {
         this.authService = authService;
         this.refreshExpirationMs = refreshExpirationMs;
+        this.parolaService = parolaService;
     }
 
     //cookie fabrikamız: 3 endpoint de cookie kuruyor
@@ -92,6 +97,13 @@ public class AuthController {
         return ResponseEntity.noContent()
                 .header("Set-Cookie", refreshCookie("", 0).toString())
                 .build();
+    }
+
+    //ilk parola değişimi için ayrı endpoint
+    @PatchMapping("/ilk-parola")
+    public ResponseEntity<Void> ilkParolayiDegistir(@Valid @RequestBody IlkParolaDegistirRequest request) {
+        parolaService.ilkParolayiDegistir(request);
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -2,6 +2,8 @@ package com.jforce.backend.model.entity;
 
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
 import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
@@ -37,7 +39,8 @@ public class Personel {
     @Column(name = "e_posta",length = 100,nullable = false,unique = true)
     private String ePosta;
 
-    @Column(name = "sicil_numarasi",nullable = false,unique = true)
+    @Generated
+    @Column(name = "sicil_numarasi",insertable = false,updatable = false,columnDefinition = "INT NOT NULL AUTO_INCREMENT UNIQUE")
     private Integer sicilNumarasi;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -74,6 +77,18 @@ public class Personel {
 
     @Column(name = "is_giris_tarihi",nullable = false)
     private LocalDate isGirisTarihi;
+
+    @Column(name = "parola_degistirilmeli_mi",nullable = false)
+    @ColumnDefault("false")
+    private boolean parolaDegistirilmeliMi = false;
+
+    public boolean getParolaDegistirilmeliMi() {
+        return parolaDegistirilmeliMi;
+    }
+
+    public void setParolaDegistirilmeliMi(boolean parolaDegistirilmeliMi) {
+        this.parolaDegistirilmeliMi = parolaDegistirilmeliMi;
+    }
 
     public Personel() {
     }

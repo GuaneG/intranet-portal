@@ -47,7 +47,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         //TODO: diğer endpointler için rate limiting durumunu düşün
         String requestURI = request.getRequestURI();
-        boolean hedefEndpoint = request.getMethod().equals("POST") && (requestURI.equals("/api/auth/login") || requestURI.equals("/api/auth/refresh"));
+        //post + /api/auth/login || refresh
+        //patch + /api/auth/ilk-parola
+        boolean hedefEndpoint = ("POST".equals(request.getMethod()) && (requestURI.equals("/api/auth/login") || requestURI.equals("/api/auth/refresh"))) || ("PATCH".equals(request.getMethod()) && requestURI.equals("/api/auth/ilk-parola"));
         if (!hedefEndpoint) {
             filterChain.doFilter(request, response);
             return;
@@ -73,7 +75,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
     //bucket oluşturup limit belirleme için helper method
     public Bucket bucketOlustur(String path){
-        if (path.equals("/api/auth/login")){
+        if (path.equals("/api/auth/login") || path.equals("/api/auth/ilk-parola")){
             //bu  capasity,refillgreedy birleşince dakikada max 5 tane istek atılabilir olur.
             Bandwidth limit = Bandwidth.builder()
                     .capacity(5)// 5 tokenlık bir kapasitesi olucak

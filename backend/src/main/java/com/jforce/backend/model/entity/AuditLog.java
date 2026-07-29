@@ -22,6 +22,7 @@ public class AuditLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personel_id")
     private Personel personel;
+    //işlemi yapan aktör
 
     @Column(name = "kullanici_adi",length = 50)
     private String kullaniciAdi;
@@ -31,6 +32,19 @@ public class AuditLog {
 
     @Column(name = "olusma_zamani",nullable = false)
     private Instant olusmaZamani = Instant.now();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hedef_personel_id")
+    private Personel hedefPersonel;
+    //üzerinde işlem yapılan hedef personel
+
+    public Personel getHedefPersonel() {
+        return hedefPersonel;
+    }
+
+    public void setHedefPersonel(Personel hedefPersonel) {
+        this.hedefPersonel = hedefPersonel;
+    }
 
     public AuditLog() {
     }

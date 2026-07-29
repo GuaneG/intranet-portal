@@ -28,4 +28,11 @@ public class JWTServiceTest {
         String token = jwtService.generateToken("test-user",RolAdi.ADMIN);
         assertThrows(JwtException.class,() -> jwtService.parseToken(token + "x"));
     }
+
+    @Test
+    void hrRoluTokenClaimineYazilir(){
+        String token = jwtService.generateToken("test-rol",RolAdi.HR);
+        Claims claims = jwtService.parseToken(token);
+        assertEquals("HR",claims.get("rol",String.class));
+    }
 }

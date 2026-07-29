@@ -4,6 +4,7 @@ import com.jforce.backend.model.entity.AuditLog;
 import com.jforce.backend.model.entity.Personel;
 import com.jforce.backend.model.enums.AuditEylem;
 import com.jforce.backend.repository.AuditLogRepository;
+import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,12 +23,21 @@ public class AuditService {
     //REQUIRES_NEW da bu durumu atlamamızı sağlar çağıranın transaction'u önemsemez
     //kendi transaction'unu oluşturur. işini yapar hemen commit eder.                          //personel yoksa kullaniciAdi null olup NPE atmasın diye onuda parametre ile veriyoruz
     @Transactional(propagation = Propagation.REQUIRES_NEW)                                     //yoksa onu direkt auditLog.setKullaniciAdi(personel.getKullaniciAdi()) ile yapabilirdik
-    public void logKaydet(AuditEylem auditEylem,Personel personel, String kullaniciAdi, String detayMsg) {
+    public void logKaydet(AuditEylem auditEylem, Personel aktor, String kullaniciAdi,String detayMsg,Personel hedefPersonel) {
+        kayitOlusturVeKaydet(auditEylem,aktor,kullaniciAdi,detayMsg,hedefPersonel);
+    }
+    @Transactional
+    public void logKaydetOrtakTransaction(AuditEylem auditEylem, Personel aktor, String kullaniciAdi,String detayMsg,Personel hedefPersonel){
+        kayitOlusturVeKaydet(auditEylem,aktor,kullaniciAdi,detayMsg,hedefPersonel);
+    }
+
+    private void kayitOlusturVeKaydet(AuditEylem auditEylem, Personel aktor, String kullaniciAdi,String detayMsg,Personel hedefPersonel){
         AuditLog auditLog = new AuditLog();
-        auditLog.setPersonel(personel);
+        auditLog.setPersonel(aktor);
         auditLog.setDetay(detayMsg);
         auditLog.setKullaniciAdi(kullaniciAdi);
         auditLog.setEylemTipi(auditEylem);
+        auditLog.setHedefPersonel(hedefPersonel);
 
         auditLogRepository.save(auditLog);
     }

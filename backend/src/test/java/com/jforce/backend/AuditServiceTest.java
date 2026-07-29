@@ -50,7 +50,7 @@ public class AuditServiceTest {
     @Test
         public void basariliLoginLoglama() {
             //act
-            auditService.logKaydet(AuditEylem.LOGIN_BASARILI,personel, personel.getKullaniciAdi(),"");
+            auditService.logKaydet(AuditEylem.LOGIN_BASARILI,personel, personel.getKullaniciAdi(),"",null);
             ArgumentCaptor<AuditLog> captor = ArgumentCaptor.forClass(AuditLog.class);
 
             //assert

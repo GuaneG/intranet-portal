@@ -92,8 +92,14 @@ public class RefreshTokenService {
         //SIZMA KONTROLU(eğer kullanıcı Revoked flag'ı true olan bir Refresh Token ile access token almaya çalışırsa refresh token kaydını sil)
         if(rt.isRevoked()){
             long rowCount = refreshTokenRepository.deleteAllByPersonel(rt.getPersonel());
-            auditService.logKaydet(AuditEylem.TOKEN_REUSE_ALARM,rt.getPersonel(),rt.getPersonel().getKullaniciAdi(),"Refresh token reuse tespit edildi,"+ rowCount + " oturum kapatıldı");
+            auditService.logKaydet(AuditEylem.TOKEN_REUSE_ALARM,rt.getPersonel(),rt.getPersonel().getKullaniciAdi(),"Refresh token reuse tespit edildi,"+ rowCount + " oturum kapatıldı",null);
             throw new InvalidRefreshTokenException("Oturum güvenliği nedeniyle sonlandırıldı, lütfen tekrar giriş yapın.");
+        }
+
+        //kullanıcı inaktifmi kontrol
+        if (!Boolean.TRUE.equals(rt.getPersonel().getCalisiyorMu())){
+            refreshTokenRepository.deleteAllByPersonel(rt.getPersonel());
+            throw new InvalidRefreshTokenException("Bu oturumunuz sona ermiştir lütfen tekrar giriş yapınız.");
         }
 
         //Eğer Refresh Token expire olmuşssa expired token'ı sil.
@@ -126,6 +132,12 @@ public class RefreshTokenService {
     @Transactional //toplu silme işlemleri transaction ister
     public void deleteExpiredTokens(){
         long deletedRowCount = refreshTokenRepository.deleteAllByExpiresAtBefore(Instant.now());
+    }
+
+    //bir personelin rolü değişirse bütün refreshtoken'ları silinsin
+    @Transactional
+    public long revokeAllForPersonel(Personel personel) {
+        return refreshTokenRepository.deleteAllByPersonel(personel);
     }
 
 }

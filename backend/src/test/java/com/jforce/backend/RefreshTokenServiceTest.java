@@ -24,8 +24,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -97,7 +96,7 @@ public class RefreshTokenServiceTest {
         //burdaki verify metodunun işi -> refreshTokenRepository deleteAllbyPersonel(personel) metodunu çağırdı mı? diye bakar
         verify(refreshTokenRepository).deleteAllByPersonel(personel);
 
-        verify(auditService).logKaydet(eq(AuditEylem.TOKEN_REUSE_ALARM), eq(personel), anyString(), anyString());
+        verify(auditService).logKaydet(eq(AuditEylem.TOKEN_REUSE_ALARM), eq(personel), anyString(), anyString(),isNull());
     }
 
     @Test
@@ -150,6 +149,28 @@ public class RefreshTokenServiceTest {
 
         //act + assert: logout idempotent -> asla exception fırlatmaz
         assertDoesNotThrow(() -> refreshTokenService.revokeToken("olmayan-token"));
+    }
+
+    @Test
+    void pasifPersonelRefreshTokenAlamaz(){
+
+        //personeli inaktife çevir
+        personel.setCalisiyorMu(Boolean.FALSE);
+
+        //geçerli refreshtoken oluştur
+        RefreshToken gecerliToken = new RefreshToken();
+        gecerliToken.setPersonel(personel);
+        gecerliToken.setRevoked(false);
+        gecerliToken.setExpiresAt(Instant.now().plusSeconds(1000));
+
+        //ileride yapılcak rotate çağrısındaki repository aramasına cevap hazırlar
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(gecerliToken));
+        //assertion
+        InvalidRefreshTokenException ex = assertThrows(InvalidRefreshTokenException.class, () -> refreshTokenService.rotate("demo-token"));
+        assertEquals("Bu oturumunuz sona ermiştir lütfen tekrar giriş yapınız.",ex.getMessage());
+        //gerekli methodlar çağrıldımı kontrol
+        verify(refreshTokenRepository).deleteAllByPersonel(personel);
+        verify(refreshTokenRepository,never()).save(any(RefreshToken.class));
     }
 
 }
