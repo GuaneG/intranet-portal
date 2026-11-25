@@ -31,6 +31,10 @@ interface TableCellProps {
   className?: string; // Optional className for styling
 }
 
+function hasTextAlignmentClass(className?: string) {
+  return /(?:^|\s)text-(?:start|end|left|right|center|justify)(?:\s|$)/.test(className ?? "");
+}
+
 // Table Component
 const Table: React.FC<TableProps> = ({ children, className }) => {
   return <table className={`min-w-full  ${className}`}>{children}</table>;
@@ -58,7 +62,9 @@ const TableCell: React.FC<TableCellProps> = ({
   className,
 }) => {
   const CellTag = isHeader ? "th" : "td";
-  return <CellTag className={` ${className}`}>{children}</CellTag>;
+  const alignmentClass = isHeader && !hasTextAlignmentClass(className) ? "text-start" : "";
+
+  return <CellTag className={`${alignmentClass} ${className}`}>{children}</CellTag>;
 };
 
 export { Table, TableHeader, TableBody, TableRow, TableCell };

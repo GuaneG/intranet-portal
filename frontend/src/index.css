@@ -628,6 +628,12 @@ span.flatpickr-weekday,
 .fc .fc-daygrid-day {
   @apply p-2;
 }
+.custom-calendar .fc-daygrid-day {
+  @apply transition-colors;
+}
+.custom-calendar .fc-daygrid-day:hover {
+  @apply bg-gray-50 dark:bg-white/[0.03];
+}
 .fc .fc-daygrid-day.fc-day-today .fc-scrollgrid-sync-inner {
   @apply rounded-sm bg-gray-100 dark:bg-white/[0.03];
 }
@@ -643,11 +649,11 @@ span.flatpickr-weekday,
 .fc .fc-day-other .fc-daygrid-day-top .fc-daygrid-day-number {
   @apply text-gray-400 dark:text-white/30;
 }
-.event-fc-color {
-  @apply rounded-lg py-2.5 pl-4 pr-3;
+.custom-calendar .event-fc-color {
+  @apply !mx-2 rounded-full border px-3 py-1 shadow-theme-xs transition hover:brightness-95;
 }
-.event-fc-color .fc-event-title {
-  @apply p-0 text-sm font-normal text-gray-700;
+.custom-calendar .event-fc-color .fc-event-main {
+  @apply !text-gray-800;
 }
 .fc-daygrid-event-dot {
   @apply w-1 h-5 ml-0 mr-3 border-none rounded-sm;
@@ -658,17 +664,20 @@ span.flatpickr-weekday,
 .fc-daygrid-event.fc-event-start {
   @apply !ml-3;
 }
-.event-fc-color.fc-bg-success {
-  @apply border-success-50 bg-success-50;
+.custom-calendar .event-fc-color.fc-bg-success {
+  @apply border-success-200 bg-success-50;
 }
-.event-fc-color.fc-bg-danger {
-  @apply border-error-50 bg-error-50;
+.custom-calendar .event-fc-color.fc-bg-danger {
+  @apply border-error-200 bg-error-50;
 }
-.event-fc-color.fc-bg-primary {
-  @apply border-brand-50 bg-brand-50;
+.custom-calendar .event-fc-color.fc-bg-primary {
+  @apply border-brand-200 bg-brand-50;
 }
-.event-fc-color.fc-bg-warning {
-  @apply border-orange-50 bg-orange-50;
+.custom-calendar .event-fc-color.fc-bg-warning {
+  @apply border-orange-200 bg-orange-50;
+}
+.custom-calendar .event-fc-color.fc-bg-birthday {
+  @apply border-purple-200 bg-purple-50;
 }
 .event-fc-color.fc-bg-success .fc-daygrid-event-dot {
   @apply bg-success-500;
@@ -681,6 +690,9 @@ span.flatpickr-weekday,
 }
 .event-fc-color.fc-bg-warning .fc-daygrid-event-dot {
   @apply bg-orange-500;
+}
+.event-fc-color.fc-bg-birthday .fc-daygrid-event-dot {
+  @apply bg-purple-500;
 }
 .fc-direction-ltr .fc-timegrid-slot-label-frame {
   @apply px-3 py-1.5 text-left text-sm font-medium text-gray-500 dark:text-gray-400;
