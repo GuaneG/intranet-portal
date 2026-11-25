@@ -20,11 +20,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -55,6 +58,8 @@ class AdminPersonelControllerIntegrationTest extends AbstractIntegrationTest {
     private AuditLogRepository auditLogRepository;
     @Autowired
     private RefreshTokenService refreshTokenService;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private Personel admin;
     private Personel hedef;
@@ -63,6 +68,11 @@ class AdminPersonelControllerIntegrationTest extends AbstractIntegrationTest {
     @BeforeEach
     public void setUp(){
         // Foreign key sırasına dikkat ederek temizle
+        jdbcTemplate.update("DELETE FROM zimmetleme_bilgileri");
+        jdbcTemplate.update("DELETE FROM ekipman_talep");
+        jdbcTemplate.update("DELETE FROM ekipman_bilgileri");
+        jdbcTemplate.update("DELETE FROM ekipman_tipi");
+        jdbcTemplate.update("DELETE FROM durum_turu");
         auditLogRepository.deleteAll();
         refreshTokenRepository.deleteAll();
         personelRepository.deleteAll();
@@ -205,13 +215,135 @@ class AdminPersonelControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void selfServiceDisiRoleGecisBekleyenEkipmanTalepleriniIptalEder()
+            throws Exception {
+        Rol yoneticiRolu = new Rol();
+        yoneticiRolu.setRolId(3);
+        yoneticiRolu.setRolAdi(RolAdi.YONETICI);
+        rolRepository.saveAndFlush(yoneticiRolu);
+        int tipId = ekipmanTipiKaydet("Rol Değişimi Laptop");
+        String bekleyenTalepId = ekipmanTalebiKaydet(
+                hedef, tipId, "ONAY_BEKLIYOR", "Rol değişimi"
+        );
+
+        mockMvc.perform(patch(
+                        "/api/admin/personel/{personelId}/rol",
+                        hedef.getPersonelId()
+                ).header(
+                        HttpHeaders.AUTHORIZATION,
+                        "Bearer " + jwtService.generateToken(
+                                admin.getPersonelId(), RolAdi.ADMIN
+                        )
+                ).contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                              "rol": "YONETICI"
+                            }
+                            """))
+                .andExpect(status().isNoContent());
+
+        assertEquals(
+                "YONETICI",
+                jdbcTemplate.queryForObject(
+                        """
+                        SELECT r.rol_adi
+                        FROM personel p
+                        JOIN rol r ON r.rol_id = p.rol_id
+                        WHERE p.personel_id = ?
+                        """,
+                        String.class,
+                        hedef.getPersonelId()
+                )
+        );
+        var iptalEdilen = jdbcTemplate.queryForMap(
+                """
+                SELECT d.durum_adi, t.islem_yapan_id, t.islem_tarihi,
+                       t.karar_notu
+                FROM ekipman_talep t
+                JOIN durum_turu d ON d.durum_id = t.talep_durum_id
+                WHERE t.talep_id = ?
+                """,
+                bekleyenTalepId
+        );
+        assertEquals("IPTAL_EDILDI", iptalEdilen.get("durum_adi"));
+        assertEquals(admin.getPersonelId(),
+                iptalEdilen.get("islem_yapan_id"));
+        assertNotNull(iptalEdilen.get("islem_tarihi"));
+        assertNull(iptalEdilen.get("karar_notu"));
+
+        List<AuditLog> auditler = auditLogRepository.findAll();
+        assertEquals(2, auditler.size());
+        AuditLog iptalAuditi = auditler.stream()
+                .filter(a -> a.getEylemTipi()
+                        == AuditEylem.EKIPMAN_TALEBI_IPTAL_EDILDI)
+                .findFirst()
+                .orElseThrow();
+        assertEquals(admin.getPersonelId(),
+                iptalAuditi.getPersonel().getPersonelId());
+        assertEquals(hedef.getPersonelId(),
+                iptalAuditi.getHedefPersonel().getPersonelId());
+        assertEquals("Ekipman talebi iptal edildi.", iptalAuditi.getDetay());
+    }
+
+    @Test
+    void selfServiceIciRoleGecisBekleyenEkipmanTalebiniDegistirmez()
+            throws Exception {
+        int tipId = ekipmanTipiKaydet("Self-service Laptop");
+        String bekleyenTalepId = ekipmanTalebiKaydet(
+                hedef, tipId, "ONAY_BEKLIYOR", "Değişmeden kalmalı"
+        );
+
+        mockMvc.perform(patch(
+                        "/api/admin/personel/{personelId}/rol",
+                        hedef.getPersonelId()
+                ).header(
+                        HttpHeaders.AUTHORIZATION,
+                        "Bearer " + jwtService.generateToken(
+                                admin.getPersonelId(), RolAdi.ADMIN
+                        )
+                ).contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                              "rol": "HR"
+                            }
+                            """))
+                .andExpect(status().isNoContent());
+
+        var degismeyenTalep = jdbcTemplate.queryForMap(
+                """
+                SELECT d.durum_adi, t.islem_yapan_id, t.islem_tarihi
+                FROM ekipman_talep t
+                JOIN durum_turu d ON d.durum_id = t.talep_durum_id
+                WHERE t.talep_id = ?
+                """,
+                bekleyenTalepId
+        );
+        assertEquals("ONAY_BEKLIYOR", degismeyenTalep.get("durum_adi"));
+        assertNull(degismeyenTalep.get("islem_yapan_id"));
+        assertNull(degismeyenTalep.get("islem_tarihi"));
+        assertEquals(1L, auditLogRepository.count());
+        assertEquals(
+                AuditEylem.ROL_DEGISTIRILDI,
+                auditLogRepository.findAll().getFirst().getEylemTipi()
+        );
+    }
+
+    @Test
     @WithMockUser(roles = "ADMIN")
     void disTransactionHataVerirseRolTokenVeAuditBirlikteRollbackOlur() {
+        Rol yoneticiRolu = new Rol();
+        yoneticiRolu.setRolId(3);
+        yoneticiRolu.setRolAdi(RolAdi.YONETICI);
+        rolRepository.saveAndFlush(yoneticiRolu);
+        int tipId = ekipmanTipiKaydet("Rol Rollback Laptop");
+        String bekleyenTalepId = ekipmanTalebiKaydet(
+                hedef, tipId, "ONAY_BEKLIYOR", "Rollback talebi"
+        );
         refreshTokenService.createToken(hedef);
         refreshTokenService.createToken(hedef);
 
         assertEquals(2L, refreshTokenRepository.count());
-        assertThrows(IllegalStateException.class, () -> rollbackTestService.rolDegistirVeHataFirlat(admin.getPersonelId(),hedef.getPersonelId(),RolAdi.HR));
+        assertThrows(IllegalStateException.class, () -> rollbackTestService.rolDegistirVeHataFirlat(admin.getPersonelId(),hedef.getPersonelId(),RolAdi.YONETICI));
 
         Personel veritabanindakiHedef = personelRepository.findById(hedef.getPersonelId()).orElseThrow();
 
@@ -222,6 +354,60 @@ class AdminPersonelControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(2L, refreshTokenRepository.count());
 
         // Ortak transaction audit kaydı da geri alınmış olmalı
+        assertEquals(0L, auditLogRepository.count());
+
+        var rollbackTalebi = jdbcTemplate.queryForMap(
+                """
+                SELECT d.durum_adi, t.islem_yapan_id, t.islem_tarihi
+                FROM ekipman_talep t
+                JOIN durum_turu d ON d.durum_id = t.talep_durum_id
+                WHERE t.talep_id = ?
+                """,
+                bekleyenTalepId
+        );
+        assertEquals("ONAY_BEKLIYOR", rollbackTalebi.get("durum_adi"));
+        assertNull(rollbackTalebi.get("islem_yapan_id"));
+        assertNull(rollbackTalebi.get("islem_tarihi"));
+    }
+
+    @Test
+    void pasifAdminPersonelRoluDegistiremez() throws Exception {
+        String token = jwtService.generateToken(
+                admin.getPersonelId(),
+                RolAdi.ADMIN
+        );
+
+        admin.setCalisiyorMu(false);
+        personelRepository.saveAndFlush(admin);
+
+        mockMvc.perform(
+                        patch(
+                                "/api/admin/personel/{personelId}/rol",
+                                hedef.getPersonelId()
+                        )
+                                .header(
+                                        HttpHeaders.AUTHORIZATION,
+                                        "Bearer " + token
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                    {
+                                      "rol": "HR"
+                                    }
+                                    """)
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
+
+        Personel degismeyen = personelRepository
+                .findById(hedef.getPersonelId())
+                .orElseThrow();
+
+        assertEquals(
+                personelRolu.getRolId(),
+                degismeyen.getRol().getRolId()
+        );
+        assertEquals(0L, refreshTokenRepository.count());
         assertEquals(0L, auditLogRepository.count());
     }
 
@@ -243,5 +429,53 @@ class AdminPersonelControllerIntegrationTest extends AbstractIntegrationTest {
             personelService.rolDegistir(aktorId, hedefPersonelId, yeniRol);
             throw new IllegalStateException("Rollback davranışını doğrulamak için test hatası.");
         }
+    }
+
+    private int ekipmanTipiKaydet(String tipAdi) {
+        jdbcTemplate.update(
+                "INSERT INTO ekipman_tipi (tip_adi, aktif_mi) VALUES (?, true)",
+                tipAdi
+        );
+        return jdbcTemplate.queryForObject(
+                "SELECT ekipman_tipi_id FROM ekipman_tipi WHERE tip_adi = ?",
+                Integer.class,
+                tipAdi
+        );
+    }
+
+    private String ekipmanTalebiKaydet(
+            Personel owner,
+            int tipId,
+            String durum,
+            String aciklama
+    ) {
+        jdbcTemplate.update(
+                "INSERT IGNORE INTO durum_turu (durum_adi) VALUES ('IPTAL_EDILDI')"
+        );
+        jdbcTemplate.update(
+                "INSERT IGNORE INTO durum_turu (durum_adi) VALUES (?)",
+                durum
+        );
+        Integer durumId = jdbcTemplate.queryForObject(
+                "SELECT durum_id FROM durum_turu WHERE durum_adi = ?",
+                Integer.class,
+                durum
+        );
+        String talepId = UUID.randomUUID().toString();
+        jdbcTemplate.update(
+                """
+                INSERT INTO ekipman_talep (
+                    talep_id, personel_id, ekipman_tipi_id, aciklama,
+                    talep_durum_id, talep_tarihi
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                talepId,
+                owner.getPersonelId(),
+                tipId,
+                aciklama,
+                durumId,
+                LocalDateTime.of(2026, 8, 31, 9, 0)
+        );
+        return talepId;
     }
 }

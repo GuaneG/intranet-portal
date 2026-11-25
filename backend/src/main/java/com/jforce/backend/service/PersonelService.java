@@ -9,11 +9,16 @@ import com.jforce.backend.model.dto.request.PersonelGuncelleRequest;
 import com.jforce.backend.model.dto.request.PersonelOlusturRequest;
 import com.jforce.backend.model.dto.response.PersonelOlusturResponse;
 import com.jforce.backend.model.entity.Departman;
+import com.jforce.backend.model.entity.DurumTuru;
+import com.jforce.backend.model.entity.EkipmanTalep;
 import com.jforce.backend.model.entity.Personel;
 import com.jforce.backend.model.entity.Rol;
 import com.jforce.backend.model.enums.AuditEylem;
 import com.jforce.backend.model.enums.RolAdi;
+import com.jforce.backend.model.enums.TalepDurum;
 import com.jforce.backend.repository.DepartmanRepository;
+import com.jforce.backend.repository.DurumTuruRepository;
+import com.jforce.backend.repository.EkipmanTalepRepository;
 import com.jforce.backend.repository.PersonelRepository;
 import com.jforce.backend.repository.RolRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,7 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.w3c.dom.stylesheets.LinkStyle;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.Clock;
 import java.util.*;
 
 @Service
@@ -35,44 +43,60 @@ public class PersonelService {
     private final AuditService auditService;
     private final DepartmanRepository departmanRepository;
     private final ParolaService parolaService;
+    private final PersonelYonetimYetkiService personelYonetimYetkiService;
+    private final RezervasyonService rezervasyonService;
+    private final EkipmanTalepRepository ekipmanTalepRepository;
+    private final DurumTuruRepository durumTuruRepository;
+    private final Clock clock;
 
-    public PersonelService(PersonelRepository personelRepository, RolRepository rolRepository, RefreshTokenService refreshTokenService, AuditService auditService, DepartmanRepository departmanRepository, ParolaService parolaService) {
+    public PersonelService(PersonelRepository personelRepository, RolRepository rolRepository, RefreshTokenService refreshTokenService, AuditService auditService, DepartmanRepository departmanRepository, ParolaService parolaService, PersonelYonetimYetkiService personelYonetimYetkiService, RezervasyonService rezervasyonService, EkipmanTalepRepository ekipmanTalepRepository, DurumTuruRepository durumTuruRepository, Clock clock) {
         this.personelRepository = personelRepository;
         this.rolRepository = rolRepository;
         this.refreshTokenService = refreshTokenService;
         this.auditService = auditService;
         this.departmanRepository = departmanRepository;
         this.parolaService = parolaService;
+        this.personelYonetimYetkiService = personelYonetimYetkiService;
+        this.rezervasyonService = rezervasyonService;
+        this.ekipmanTalepRepository = ekipmanTalepRepository;
+        this.durumTuruRepository = durumTuruRepository;
+        this.clock = clock;
     }
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public void rolDegistir(String aktorId, String hedefPersonelId, RolAdi yeniRol){
+    public void rolDegistir(String aktorId, String hedefPersonelId, RolAdi yeniRol) {
+        Personel actorPersonel = personelYonetimYetkiService.aktifAktoruGetir(aktorId);
 
-        Personel actorPersonel = personelRepository.findById(aktorId).orElseThrow(() -> new KaynakBulunamadiException("Personel id not found."));
-        Personel hedefPersonel = personelRepository.findById(hedefPersonelId).orElseThrow(() -> new KaynakBulunamadiException("Personel id not found."));
+        Personel hedefPersonel = personelRepository.findByIdForUpdate(hedefPersonelId).orElseThrow(() -> new KaynakBulunamadiException("Personel id not found."));
+
+        personelYonetimYetkiService.hedefiDogrula(actorPersonel, hedefPersonel);
 
         RolAdi eskiRol = hedefPersonel.getRol().getRolAdi();
 
-        if (eskiRol == yeniRol){
+        if (eskiRol == yeniRol) {
             return;
         }
-        if(aktorId.equals(hedefPersonelId)){
-            throw new AccessDeniedException("Admin kendi rolünü değiştiremez.");
-        }
-        if (eskiRol == RolAdi.ADMIN){
-            throw new AccessDeniedException("Adminin rolü değiştirelemez.");
+
+        if (yeniRol == RolAdi.ADMIN) {
+            throw new GecersizIstekException("Yeni rol admin olamaz.");
         }
 
         Optional<Rol> yeniRolObjesi = rolRepository.findByRolAdi(yeniRol);
-        hedefPersonel.setRol(yeniRolObjesi.orElseThrow(()->new KaynakBulunamadiException("Rol değiştirme başarısız.")));
 
+        if ((eskiRol == RolAdi.PERSONEL || eskiRol == RolAdi.HR)
+                && (yeniRol == RolAdi.YONETICI || yeniRol == RolAdi.ADMIN)) {
+            bekleyenEkipmanTalepleriniIptalEt(
+                    hedefPersonel,
+                    actorPersonel,
+                    LocalDateTime.now(clock)
+            );
+        }
+
+        hedefPersonel.setRol(yeniRolObjesi.orElseThrow(() -> new KaynakBulunamadiException("Rol değiştirme başarısız.")));
         refreshTokenService.revokeAllForPersonel(hedefPersonel);
-        auditService.logKaydetOrtakTransaction(AuditEylem.ROL_DEGISTIRILDI,
-                actorPersonel,
-                actorPersonel.getKullaniciAdi(),
-                hedefPersonel.getKullaniciAdi() + " ,Rol değişikliği: " + eskiRol + " -> " + yeniRol,
-                hedefPersonel);
+        auditService.logKaydetOrtakTransaction(AuditEylem.ROL_DEGISTIRILDI, actorPersonel, actorPersonel.getKullaniciAdi(), hedefPersonel.getKullaniciAdi()
+                        + " ,Rol değişikliği: " + eskiRol + " -> " + yeniRol, hedefPersonel);
     }
 
     //----HELPER METHODLAR----
@@ -92,6 +116,61 @@ public class PersonelService {
 
         if (!Objects.equals(yonetici.getDepartman().getDepartmanId(), departman.getDepartmanId())) {
             throw new GecersizIstekException("Yönetici ve personel aynı departmanda olmalıdır.");
+        }
+
+        yoneticiZincirindeDonguDogrula(yonetici, hedefPersonelId);
+    }
+
+    private void bekleyenEkipmanTalepleriniIptalEt(
+            Personel hedef,
+            Personel aktor,
+            LocalDateTime islemZamani
+    ) {
+        List<EkipmanTalep> talepler = ekipmanTalepRepository
+                .findPendingByPersonelForUpdate(
+                        hedef.getPersonelId(),
+                        TalepDurum.ONAY_BEKLIYOR
+                );
+        if (talepler.isEmpty()) {
+            return;
+        }
+
+        DurumTuru iptalDurumu = durumTuruRepository
+                .findByDurumKodu(TalepDurum.IPTAL_EDILDI)
+                .orElseThrow(() -> new KaynakBulunamadiException(
+                        "Talep durumu bulunamadı."
+                ));
+
+        for (EkipmanTalep talep : talepler) {
+            talep.setTalepDurum(iptalDurumu);
+            talep.setIslemYapanId(aktor);
+            talep.setIslemTarihi(islemZamani);
+            talep.setKararNotu(null);
+            auditService.logKaydetOrtakTransaction(
+                    AuditEylem.EKIPMAN_TALEBI_IPTAL_EDILDI,
+                    aktor,
+                    aktor.getKullaniciAdi(),
+                    "Ekipman talebi iptal edildi.",
+                    hedef
+            );
+        }
+    }
+
+    private void yoneticiZincirindeDonguDogrula(Personel yonetici, String hedefPersonelId) {
+        if (hedefPersonelId == null) {
+            return;
+        }
+
+        Set<String> ziyaretEdilenPersonelIdleri = new HashSet<>();
+        Personel mevcut = yonetici;
+
+        while (mevcut != null) {
+            String mevcutPersonelId = mevcut.getPersonelId();
+            if (Objects.equals(mevcutPersonelId, hedefPersonelId)
+                    || !ziyaretEdilenPersonelIdleri.add(mevcutPersonelId)) {
+                throw new GecersizIstekException("Yönetici ataması döngü oluşturamaz.");
+            }
+            mevcut = mevcut.getYonetici();
         }
     }
 
@@ -117,7 +196,7 @@ public class PersonelService {
     @PreAuthorize("hasAnyRole('HR', 'ADMIN')")
     public PersonelOlusturResponse personelOlustur(String aktorId, PersonelOlusturRequest request){
         //işlem yapan personeli al
-        Personel aktor = personelRepository.findById(aktorId).orElseThrow(() -> new KaynakBulunamadiException("İşlemi yapan personel bulunamadı."));
+        Personel aktor = personelYonetimYetkiService.aktifAktoruGetir(aktorId);
         //req'de gelen kullanici adını ve epostayı normalize et
         String kullaniciAdi = parolaService.kullaniciAdiniNormalizeEt(request.kullaniciAdi());
         String ePosta = ePostayiNormalizeEt(request.ePosta());
@@ -186,8 +265,10 @@ public class PersonelService {
             throw new GecersizIstekException("Güncellenecek en az bir alan gönderilmelidir.");
         }
 
-        Personel aktor = personelRepository.findById(aktorId).orElseThrow(() -> new KaynakBulunamadiException("İşlemi yapan personel bulunamadı."));
+        Personel aktor = personelYonetimYetkiService.aktifAktoruGetir(aktorId);
         Personel hedefPersonel = personelRepository.findById(hedefPersonelId).orElseThrow(() -> new KaynakBulunamadiException("Güncellenecek personel bulunamadı."));
+
+        personelYonetimYetkiService.hedefiDogrula(aktor, hedefPersonel);
 
         List<String> degisenAlanlar = new ArrayList<>();
 
@@ -374,9 +455,102 @@ public class PersonelService {
             throw new KaynakCakismasiException("Bu e-posta başka bir personel tarafından kullanılıyor.");
         }
 
-        auditService.logKaydetOrtakTransaction(AuditEylem.PERSONEL_GUNCELLENDI, aktor, aktor.getKullaniciAdi(), "Güncellenen alanlar: " + String.join(", ", degisenAlanlar), hedefPersonel
-        );
+        auditService.logKaydetOrtakTransaction(AuditEylem.PERSONEL_GUNCELLENDI, aktor, aktor.getKullaniciAdi(), "Güncellenen alanlar: " + String.join(", ", degisenAlanlar), hedefPersonel);
 
     }
+
+    @Transactional
+    @PreAuthorize("hasAnyRole('HR', 'ADMIN')")
+    public void personelAktiflestir(
+            String aktorId,
+            String hedefPersonelId
+    ) {
+        Personel aktor =
+                personelYonetimYetkiService
+                        .aktifAktoruGetir(aktorId);
+
+        Personel hedef = personelRepository
+                .findById(hedefPersonelId)
+                .orElseThrow(
+                        () -> new KaynakBulunamadiException(
+                                "Personel bulunamadı."
+                        )
+                );
+
+        personelYonetimYetkiService.hedefiDogrula(
+                aktor,
+                hedef
+        );
+
+        if (Boolean.TRUE.equals(
+                hedef.getCalisiyorMu()
+        )) {
+            return;
+        }
+
+        hedef.setCalisiyorMu(true);
+        hedef.setIsCikisTarihi(null);
+        auditService.logKaydetOrtakTransaction(
+                AuditEylem.PERSONEL_AKTIFLESTIRILDI,
+                aktor,
+                aktor.getKullaniciAdi(),
+                "Personel aktifleştirildi.",
+                hedef
+        );
+    }
+
+    @Transactional
+    @PreAuthorize("hasAnyRole('HR', 'ADMIN')")
+    public void personelPasiflestir(String aktorId, String hedefPersonelId) {
+        Personel aktor = personelYonetimYetkiService.aktifAktoruGetir(aktorId);
+
+        Personel hedef = personelRepository.findByIdForUpdate(hedefPersonelId).orElseThrow(() -> new KaynakBulunamadiException("Personel bulunamadı."));
+
+        personelYonetimYetkiService.hedefiDogrula(aktor, hedef);
+        RolAdi hedefRol = hedef.getRol().getRolAdi();
+
+        if (!Boolean.TRUE.equals(hedef.getCalisiyorMu())) {
+            return;
+        }
+
+        bekleyenEkipmanTalepleriniIptalEt(
+                hedef,
+                aktor,
+                LocalDateTime.now(clock)
+        );
+
+        int yoneticisiKaldirilanPersonelSayisi = 0;
+
+        if (hedefRol == RolAdi.YONETICI) {
+            List<Personel> dogrudanCalisanlar = personelRepository.findAllByYonetici(hedef);
+            dogrudanCalisanlar.forEach(personel -> personel.setYonetici(null));
+            yoneticisiKaldirilanPersonelSayisi = dogrudanCalisanlar.size();
+        }
+
+        int iptalEdilenRezervasyonSayisi =
+                rezervasyonService.personelPasiflestirmeRezervasyonlariniIptalEt(
+                        aktor,
+                        hedef
+                );
+
+        hedef.setCalisiyorMu(false);
+        hedef.setIsCikisTarihi(LocalDate.now());
+
+        refreshTokenService.revokeAllForPersonel(hedef);
+
+        auditService.logKaydetOrtakTransaction(
+                AuditEylem.PERSONEL_PASIFE_ALINDI,
+                aktor,
+                aktor.getKullaniciAdi(),
+                "Personel pasife alındı. "
+                        + "Yöneticisi kaldırılan personel sayısı: "
+                        + yoneticisiKaldirilanPersonelSayisi
+                        + ". İptal edilen rezervasyon sayısı: "
+                        + iptalEdilenRezervasyonSayisi,
+                hedef
+        );
+    }
+
+
 
 }

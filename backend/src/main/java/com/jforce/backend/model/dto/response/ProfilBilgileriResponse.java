@@ -5,6 +5,7 @@ import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.math.BigDecimal;
 
 public record ProfilBilgileriResponse(
         String kullaniciAdi,
@@ -19,7 +20,7 @@ public record ProfilBilgileriResponse(
         String yonetici,
         Integer yillikIzinHakki,
         String profilFoto,
-        Integer kalanIzin,
+        BigDecimal kalanIzin,
         String mezunOkul,
         String mezunBolum,
         String telNo,

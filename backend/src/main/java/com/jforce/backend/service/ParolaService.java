@@ -23,12 +23,20 @@ public class ParolaService {
     private final PersonelRepository personelRepository;
     private final RefreshTokenService refreshTokenService;
     private final AuditService auditService;
+    private final PersonelYonetimYetkiService personelYonetimYetkiService;
 
-    public ParolaService(PasswordEncoder passwordEncoder, PersonelRepository personelRepository, RefreshTokenService refreshTokenService, AuditService auditService) {
+    public ParolaService(
+            PasswordEncoder passwordEncoder,
+            PersonelRepository personelRepository,
+            RefreshTokenService refreshTokenService,
+            AuditService auditService,
+            PersonelYonetimYetkiService personelYonetimYetkiService
+    ) {
         this.passwordEncoder = passwordEncoder;
         this.personelRepository = personelRepository;
         this.refreshTokenService = refreshTokenService;
         this.auditService = auditService;
+        this.personelYonetimYetkiService = personelYonetimYetkiService;
     }
 
     public String hashle(String hamParola) {
@@ -87,6 +95,30 @@ public class ParolaService {
         }
 
         return normalizeKullaniciAdi;
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public void adminParolaSifirla(String aktorId, String hedefPersonelId, String geciciParola) {
+        Personel aktor = personelYonetimYetkiService.aktifAdminAktoruGetir(aktorId);
+        Personel hedef = personelRepository.findById(hedefPersonelId)
+                .orElseThrow(() -> new KaynakBulunamadiException("Personel bulunamadı."));
+
+        personelYonetimYetkiService.hedefiDogrula(aktor, hedef);
+        yeniParolayiDogrula(geciciParola, hedef.getKullaniciAdi(), hedef.getParolaHash());
+
+        hedef.setParolaHash(hashle(geciciParola));
+        hedef.setParolaDegistirilmeliMi(true);
+
+        refreshTokenService.revokeAllForPersonel(hedef);
+
+        auditService.logKaydetOrtakTransaction(
+                AuditEylem.PAROLA_SIFIRLANDI,
+                aktor,
+                aktor.getKullaniciAdi(),
+                "Personel parolası Admin tarafından sıfırlandı.",
+                hedef
+        );
     }
 
     @Transactional
