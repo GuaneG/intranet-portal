@@ -19,13 +19,20 @@ import com.jforce.backend.service.TatilTakvimiService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -38,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@Import(TatilTakvimiConcurrencyIntegrationTest.SabitSaatTestConfig.class)
 class TatilTakvimiConcurrencyIntegrationTest
         extends AbstractIntegrationTest {
 
@@ -191,5 +199,20 @@ class TatilTakvimiConcurrencyIntegrationTest
     private enum Sonuc {
         BASARILI,
         CAKISMA
+    }
+
+    // Testteki tatil tarihleri (10-16 Kasım 2026) "geçmiş tarih" kuralına
+    // takılmasın diye bugünü bu tarihlerden önceye sabitler.
+    @TestConfiguration
+    static class SabitSaatTestConfig {
+
+        @Bean
+        @Primary
+        Clock testClock() {
+            return Clock.fixed(
+                    Instant.parse("2026-11-01T09:00:00Z"),
+                    ZoneId.of("Europe/Istanbul")
+            );
+        }
     }
 }

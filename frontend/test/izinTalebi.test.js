@@ -130,13 +130,15 @@ test("izin formu tarih sırasını ve not sınırını backend'e gitmeden doğru
     const izinTalebi = await import("../src/lib/izinTalebi.js").catch(() => null);
 
     assert.notEqual(izinTalebi, null);
+    // Testteki tarihler "geçmiş tarih" kuralına takılmasın diye bugün sabitlenir.
+    const bugun = "2026-08-31";
     assert.equal(
         izinTalebi.izinTalepFormunuDogrula({
             izinTuruId: "",
             baslangicTarihi: "2026-09-01",
             bitisTarihi: "2026-09-05",
             yoneticiyeNot: "",
-        }),
+        }, bugun),
         "İzin türü seçmelisiniz.",
     );
     assert.equal(
@@ -145,7 +147,7 @@ test("izin formu tarih sırasını ve not sınırını backend'e gitmeden doğru
             baslangicTarihi: "2026-09-05",
             bitisTarihi: "2026-09-01",
             yoneticiyeNot: "",
-        }),
+        }, bugun),
         "Bitiş tarihi başlangıç tarihinden önce olamaz.",
     );
     assert.equal(
@@ -154,7 +156,7 @@ test("izin formu tarih sırasını ve not sınırını backend'e gitmeden doğru
             baslangicTarihi: "2026-09-01",
             bitisTarihi: "2026-09-05",
             yoneticiyeNot: "a".repeat(1001),
-        }),
+        }, bugun),
         "Yönetici notu en fazla 1000 karakter olabilir.",
     );
     assert.equal(
@@ -163,7 +165,7 @@ test("izin formu tarih sırasını ve not sınırını backend'e gitmeden doğru
             baslangicTarihi: "2026-09-01",
             bitisTarihi: "2026-09-05",
             yoneticiyeNot: "Aile ziyareti",
-        }),
+        }, bugun),
         null,
     );
 });
