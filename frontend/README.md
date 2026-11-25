@@ -1,204 +1,78 @@
-# TailAdmin React - Free React Tailwind Admin Dashboard Template
+# Intranet Portal Frontend
 
-TailAdmin is a free and open-source admin dashboard template built on **React and Tailwind CSS**, providing developers
-with everything they need to create a comprehensive, data-driven back-end,
-dashboard, or admin panel solution for upcoming web projects.
+Intranet Portal’ın React ve TypeScript arayüzüdür. TailAdmin görsel altyapısı ürün ekranlarına uyarlanmış; authentication, profil, ekip dizini, yönetim, tatil takvimi ve oda rezervasyonu akışları gerçek backend endpoint’lerine bağlanmıştır.
 
-With TailAdmin, you get access to all the necessary dashboard UI components, elements, and pages required to build a
-feature-rich and complete dashboard or admin panel. Whether you're building dashboard or admin panel for a complex web
-application or a simple website, TailAdmin is the perfect solution to help you get up and running quickly.
+## Teknolojiler
 
-![TailAdmin React.js Dashboard Preview](./banner.png)
+- React 19 ve TypeScript
+- Vite 6
+- Tailwind CSS 4
+- React Router 7
+- FullCalendar 6
+- ESLint
 
-## Overview
+## Uygulanan akışlar
 
-TailAdmin provides essential UI components and layouts for building feature-rich, data-driven admin dashboards and
-control panels. It's built on:
+- Login, zorunlu ilk parola değişimi, sessiz refresh ve logout
+- Role göre sidebar ve route koruması
+- Profil bilgileri, yetenekler ve profil fotoğrafı
+- Personel yönetimi, aktifleştirme/pasifleştirme, rol ve yetenek yönetimi
+- Departman ve yetenek katalog yönetimi
+- Filtrelenebilir ekip dizini ve role uygun organizasyon hiyerarşisi
+- Dashboard ekip özeti
+- Tatil takvimi listeleme ve HR/Admin tek/çok günlük tatil grubu oluşturma, güncelleme ve silme
+- Takvimde şirket genelindeki aktif çalışanların güvenli doğum günü olayları
+- İzin türü lookup, iş günü önizleme, izin talebi oluşturma ve kişinin kendi taleplerini listeleme
+- Owner bekleyen talep iptali; Yönetici doğrudan ekip ve Admin şirket geneli izin kuyruğu ile onay/red işlemleri
+- Yalnız Admin’e açık, tarih/eylem/aktör UUID/hedef UUID filtreli ve sayfalı audit log ekranı
+- Bütün aktif roller için günlük oda uygunluk grid’i, rezervasyon oluşturma, kendi geçmişini görüntüleme ve başlamamış rezervasyonu iptal etme
+- Admin için şirket geneli rezervasyon geçmişi ve yetkili iptal; şirket takviminde güvenli rezervasyon olayları ve dashboard oda doluluk kartı
+- Aktif rezervasyonla çakışan tatil oluşturma/güncelleme isteğinde backend’in güvenli `409` mesajını form değerlerini koruyarak gösterme
 
-- React 19
-- TypeScript
-- Tailwind CSS v4
+## Bilinen kapsam
 
-### Quick Links
+- Onaylı kişisel izinleri ve Yönetici takım izinlerini ürün takviminde ayrı olay türleri olarak gösterme henüz tamamlanmamıştır.
+- HR/Admin izin türü yönetimi ile hizmet yılına göre hak tahakkuku ve devreden bakiye modeli gelecekte değerlendirilecek ayrı ürün işleridir; mevcut frontend bunları uygulanmış kabul etmez.
+- Audit ekranındaki aktör ve hedef filtreleri şimdilik UUID ile çalışır; ad veya kullanıcı adıyla aranabilir seçim gelecekte eklenecektir.
+- Ekipman, duyuru ve takdir panosu ürün akışları henüz tamamlanmamıştır.
+- TailAdmin’den kalan bazı demo route, component ve asset’lerin temizliği devam etmektedir.
 
-- [✨ Visit Website](https://tailadmin.com)
-- [📄 Documentation](https://tailadmin.com/docs)
-- [⬇️ Download](https://tailadmin.com/download)
-- [🖌️ Figma Design File (Community Edition)](https://www.figma.com/community/file/1214477970819985778)
-- [⚡ Get PRO Version](https://tailadmin.com/pricing)
+## Kurulum ve çalıştırma
 
-### Demos
+Güncel bir Node.js LTS sürümü kullanın.
 
-- [Free Version](https://free-react-demo.tailadmin.com/)
-- [Pro Version](https://react-demo.tailadmin.com)
-
-### Other Versions
-
-- [HTML Version](https://github.com/TailAdmin/tailadmin-free-tailwind-dashboard-template)
-- [Next.js Version](https://github.com/TailAdmin/free-nextjs-admin-dashboard)
-- [Vue.js Version](https://github.com/TailAdmin/vue-tailwind-admin-dashboard)
-- [Angular Version](https://github.com/TailAdmin/free-angular-tailwind-dashboard)
-- [Laravel Version](https://github.com/TailAdmin/tailadmin-laravel)
-
-## Installation
-
-### Prerequisites
-
-To get started with TailAdmin, ensure you have the following prerequisites installed and set up:
-
-- Node.js 18.x or later (recommended to use Node.js 20.x or later)
-
-### Cloning the Repository
-
-Clone the repository using the following command:
-
-```bash
-git clone https://github.com/TailAdmin/free-react-tailwind-admin-dashboard.git
+```powershell
+npm install
+npm run dev
 ```
 
-> Windows Users: place the repository near the root of your drive if you face issues while cloning.
+Frontend geliştirme sunucusu varsayılan olarak `http://localhost:5173` adresindedir ve API için `http://localhost:8080` backend’ini kullanır.
 
-1. Install dependencies:
+## Komutlar
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+```powershell
+npm run dev
+npm run lint
+npm run build
+npm run preview
+```
 
-2. Start the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+`package.json` içinde birleşik bir `test` script’i veya ayrı bir frontend test framework’ü henüz yoktur. `test/` klasöründeki hafif `node:test` dosyaları ilgili dosya doğrudan Node ile çağrılarak çalıştırılabilir.
 
-## Components
+## Kaynak yapısı
 
-TailAdmin is a pre-designed starting point for building a web-based dashboard using React.js and Tailwind CSS. The
-template includes:
+```text
+src/
+├── components/    # Ortak ve özellik bazlı UI parçaları
+├── context/       # Authentication ve uygulama bağlamları
+├── layout/        # Sidebar, header ve ana yerleşim
+├── lib/           # API istemcisi ve yardımcılar
+├── pages/         # Route seviyesindeki ürün ekranları
+└── types/         # API/UI TypeScript sözleşmeleri
+```
 
-- Sophisticated and accessible sidebar
-- Data visualization components
-- Prebuilt profile management and 404 page
-- Tables and Charts(Line and Bar)
-- Authentication forms and input elements
-- Alerts, Dropdowns, Modals, Buttons and more
-- FAQ & Accordion, Testimonials, and Carousels
-- Can't forget Dark Mode 🕶️
+Backend endpoint ve rol sözleşmeleri için kökteki [API_SPEC.md](../API_SPEC.md), güvenlik kuralları için [SECURITY.md](../SECURITY.md) esas alınır.
 
-All components are built with React and styled using Tailwind CSS for easy customization.
+## Lisans ve şablon kaynağı
 
-## Feature Comparison
-
-### Free Version
-
-- 1 Unique Dashboard
-- 35+ dashboard components
-- 50+ UI elements
-- Basic Figma design files
-- Community support
-
-### Pro Version
-
-- 7 Unique Dashboards: Analytics, Ecommerce, Marketing, CRM, SaaS, Stocks, Logistics (more coming soon)
-- 500+ dashboard components and UI elements
-- Complete Figma design file
-- Email support
-
-To learn more about pro version features and pricing, visit our [pricing page](https://tailadmin.com/pricing).
-
-## Changelog
-
-### Version 2.3.0 - [April 28, 2026]
-- Added **AI Dashboard** with token usage and revenue tracking.
-- Added **Sales Dashboard** with retention and multi-channel analytics.
-- Added **Finance Dashboard** with cashflow and balance management.
-- Introduced **6 New Layout variations** for improved UI flexibility.
-- Integrated **Advanced Data Visualization** with 7+ new chart types.
-
-### Version 2.1.0 - [Dec 30, 2025]
-
-- Resolved Date Picker positioning and input issues in Charts.
-
-### Version 2.0.2 - [March 25, 2025]
-
-- Upgraded to React 19
-- Included overrides for packages to prevent peer dependency errors.
-- Migrated from react-flatpickr to flatpickr package for React 19 support
-
-### Version 2.0.1 - [February 27, 2025]
-
-#### Update Overview
-
-- Upgraded to Tailwind CSS v4 for better performance and efficiency.
-- Updated class usage to match the latest syntax and features.
-- Replaced deprecated class and optimized styles.
-
-#### Next Steps
-
-- Run npm install or yarn install to update dependencies.
-- Check for any style changes or compatibility issues.
-- Refer to the Tailwind CSS v4 [Migration Guide](https://tailwindcss.com/docs/upgrade-guide) on this release. if needed.
-- This update keeps the project up to date with the latest Tailwind improvements. 🚀
-
-### Version 2.0.0 - [February 2025]
-
-A major update with comprehensive redesign and modern React patterns implementation.
-
-#### Major Improvements
-
-- Complete UI redesign with modern React patterns
-- New features: collapsible sidebar, chat, and calendar
-- Improved performance and accessibility
-- Updated data visualization using ApexCharts
-
-#### Key Features
-
-- Redesigned dashboards (Ecommerce, Analytics, Marketing, CRM)
-- Enhanced navigation with React Router integration
-- Advanced tables with sorting and filtering
-- Calendar with drag-and-drop support
-- New UI components and improved existing ones
-
-#### Breaking Changes
-
-- Updated sidebar component API
-- Migrated charts to ApexCharts
-- Revised authentication system
-
-[Read more](https://tailadmin.com/docs/update-logs/react) on this release.
-
-### Version 1.3.7 - [June 20, 2024]
-
-#### Enhancements
-
-1. Remove Repetition of DefaultLayout in every Pages
-2. Add ClickOutside Component for reduce repeated functionality in Header Message, Notification and User Dropdowns.
-
-### Version 1.3.6 - [Jan 31, 2024]
-
-#### Enhancements
-
-1. Integrate flatpickr in [Date Picker/Form Elements]
-2. Change color after select an option [Select Element/Form Elements].
-3. Make it functional [Multiselect Dropdown/Form Elements].
-4. Make best value editable [Pricing Table One/Pricing Table].
-5. Rearrange Folder structure.
-
-### Version 1.2.0 - [Apr 28, 2023]
-
-- Add Typescript in TailAdmin React.
-
-### Version 1.0.0 - Initial Release - [Mar 13, 2023]
-
-- Initial release of TailAdmin React.
-
-## License
-
-TailAdmin React.js Free Version is released under the MIT License.
-
-## Support
-
-If you find this project helpful, please consider giving it a star on GitHub. Your support helps us continue developing
-and maintaining this template.
+Arayüz TailAdmin React Free başlangıç şablonundan türetilmiştir. Şablonun lisans metni [LICENSE.MD](LICENSE.MD) dosyasındadır.

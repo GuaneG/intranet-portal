@@ -78,40 +78,42 @@ Bir entity veya DTO’nun bulunması, ilgili modülün tamamlandığı anlamına
     - HR rolü ve Admin rol değiştirme akışı hazır; diğer modüllerin rol yetkilendirmeleri henüz tamamlanmadı.
 - [-] Personel ve profil veri modeli
     - Entity ve DTO hazırlıkları mevcut.
-    - HR personel oluşturma/güncelleme ile ilk/normal parola değiştirme akışları hazır; profil, ekip dizini ve HR pasifleştirme API’leri bekliyor.
+    - HR personel oluşturma/güncelleme/pasifleştirme, ilk/normal parola değiştirme, kendi profilini görüntüleme/güncelleme ve ekip dizini backend’i hazır.
 - [-] Dashboard
     - Doğum günü bölümü gerçek veriye bağlı.
-    - Duyurular, izin, oda doluluğu, takdir ve talepler placeholder.
+    - İzin bakiyesi ve güvenli oda doluluk özeti gerçek backend verisine bağlı.
+    - Duyurular, bugün izinli sayısı, takdir ve kalan talep kartları placeholder.
 - [-] Takvim frontend temeli
-    - `/calendar` rotası ve TailAdmin takvim şablonu mevcut.
-    - Gerçek API bağlantısı ve ürün verileri henüz yok.
-- [-] Ekip dizini frontend temeli
-    - Sidebar’da “Ekip Dizini” etiketi mevcut.
-    - Sayfa hâlâ Basic Tables demo verisini gösteriyor.
+    - `/calendar` rotası gerçek tatil API’sine bağlı; tek ve çok günlük tatil grupları listelenebiliyor ve HR/Admin tarafından yönetilebiliyor.
+    - Çok günlük grup tek takvim olayı olarak gösteriliyor; grubun herhangi bir gününden bütün grup düzenlenebiliyor veya silinebiliyor.
+    - Aktif çalışanların doğum günleri güvenli tarih-aralığı endpoint’i üzerinden şirket genelinde takvim olayı olarak gösteriliyor.
+- [x] Ekip dizini frontend’i
+    - `/ekip-dizini` gerçek personel verisi, filtreler ve role uygun görünürlük kurallarıyla çalışıyor.
+    - Yönetici zinciri ve organizasyon hiyerarşisi backend sözleşmeleriyle entegre edildi.
 - [-] Talepler frontend ayrımı
     - Menüde “İzin Talepleri” ve “Ekipman Talepleri” başlıkları mevcut.
-    - Semantik rotalar ve gerçek talep sayfaları henüz yok.
+    - İzin akışları ile rezervasyon günlük uygunluk/create/geçmiş/iptal ekranları hazır; ekipman ve diğer talep modülleri bekliyor.
 - [-] TailAdmin ürün markalaması
     - JForce logosu bazı alanlarda kullanılıyor.
     - Demo ekranları, metinleri ve asset’leri hâlâ bulunuyor.
 - [-] Test kapsamı
-    - Authentication, rol değiştirme, HR personel oluşturma/güncelleme ve parola akışları unit ve gerçek MySQL HTTP/integration testleriyle korunuyor.
-    - İzin, ekipman, rezervasyon, duyuru ve frontend testleri henüz yok.
+    - Authentication, personel/profil, ekip dizini/hiyerarşi, katalog, tatil takvimi, iş günü hesabı, izin, rezervasyon ve ekipman/zimmet akışları unit ve gerçek MySQL HTTP/integration testleriyle korunuyor.
+    - Frontend’de hafif `node:test` dosyaları var; birleşik `npm test` script’i ve kapsamlı component/e2e test altyapısı henüz yok.
+    - Duyuru testleri ilgili modül uygulanınca eklenecek.
 
 ### 3.3 Tamamlanmayan ana kapsam
 
-- [ ] HR personel pasifleştirme
-- [ ] Çalışan profil endpoint’leri
-- [ ] Ekip dizini API’si ve gerçek frontend ekranı
-- [ ] Güvenli profil fotoğrafı yükleme
-- [ ] Yıllık izin hakkı ve tatil takvimi
-- [ ] İzin talep ve onay akışı
-- [ ] Ekipman talebi, envanter ve zimmet akışı
-- [ ] Oda rezervasyonu iş akışı
+- [x] Çalışan profil endpoint’leri
+- [x] Ekip dizini API’si ve gerçek frontend ekranı
+- [x] Güvenli profil fotoğrafı yükleme
+- [-] Yıllık izin hakkı ve tatil takvimi — profil/dashboard bakiyesi, iş günü önizlemesi, tek/çok günlük tatil, şirket geneli doğum günleri ve izin talep/iptal/karar akışları backend/frontend’de hazır; hizmet yılı/devreden bakiye ile kişisel/takım izin olayları gelecek kapsamda
+- [x] İzin talep, owner iptali ve Yönetici/Admin onay-red akışı
+- [-] Ekipman talebi, envanter ve zimmet akışı — backend kataloğu, talep/karar, envanter, zimmet/iade, personel yaşam döngüsü, migration ve concurrency/security testleri hazır; frontend entegrasyonu bekliyor
+- [x] Oda rezervasyonu iş akışı — backend ve frontend create/geçmiş/iptal, Admin şirket geçmişi, şirket takvimi ve dashboard doluluk entegrasyonları hazır
 - [ ] Duyurular ve takım duyuruları
 - [ ] Yorum, beğeni ve takdir panosu iş akışları
 - [ ] Dashboard’un kalan gerçek verileri
-- [ ] Role göre frontend menüsü
+- [x] Role göre frontend menüsü
 - [ ] TailAdmin şablonunun ürün ekranlarına dönüştürülmesi
 
 ## 4. Onaylanan Ürün Kararları
@@ -159,6 +161,8 @@ Pasife alma işleminde:
 - geçmiş kayıtların korunması
 
 uygulanır.
+
+Pasifleştirme endpoint’i body almaz. HR/Admin `PERSONEL` ve `HR` hedefleri, yalnız Admin `YONETICI` hedefini pasifleştirebilir; `ADMIN` hedef ve öz-hedef işlemleri yasaktır. Yönetici pasifleştirilirse bütün doğrudan çalışanların yönetici ilişkisi kaldırılır. Zaten pasif hedef için yetkili istek idempotenttir ve yeni yan etki üretmez. Aktif ekip dizininden filtreleme, ekip dizini endpoint’i tamamlandığında uygulanacaktır.
 
 ### 4.4 Takım ve takım duyurusu
 
@@ -213,11 +217,19 @@ bir özellik olarak tasarlanacaktır.
 |---|---:|---:|---:|---:|
 | Kendi profilini görüntüleme/düzenleme | Evet | Evet | Evet | Evet |
 | Ekip dizinini görüntüleme | Evet | Evet | Evet | Evet |
-| Kendi izin talebini oluşturma | Evet | Hayır | Evet | Hayır |
+| Hedef kitlesindeki duyuruları görüntüleme | Evet | Evet | Evet | Evet |
+| Kendi izin talebini oluşturma | Evet | Evet* | Evet | Hayır |
+| Kendi izin taleplerini görüntüleme | Evet | Evet* | Evet | Hayır |
 | Kendi ekipman talebini oluşturma | Evet | Hayır | Evet | Hayır |
-| Kendi takımının taleplerini işleme | Hayır | Evet | Hayır | Gerekirse müdahale |
-| Kendi takımını ve takvimini görüntüleme | Hayır | Evet | Şirket geneli | Şirket geneli |
-| Kendi takımına duyuru oluşturma | Hayır | Evet | Hayır | Gerekirse |
+| Kendi ekipman taleplerini görüntüleme | Evet | Hayır | Evet | Hayır |
+| Kendi rezervasyonunu oluşturma | Evet | Evet | Evet | Evet |
+| Kendi rezervasyonlarını görüntüleme | Evet | Evet | Evet | Evet |
+| Talep edilebilir ekipman kataloğunu görüntüleme | Evet | Evet | Evet | Envanter yönetimi kapsamında |
+| Kendi takımının izin ve ekipman taleplerini işleme | Hayır | Evet | Hayır | Hayır |
+| Şirket geneli izin/ekipman taleplerini yönetim amacıyla görüntüleme | Hayır | Hayır | Hayır | Evet |
+| Genel/kişisel ürün takvimini görüntüleme | Evet | Evet | Evet | Evet |
+| Kendi takımını ve takım takvimini görüntüleme | Hayır | Evet | Şirket geneli | Şirket geneli |
+| Kendi takımına duyuru oluşturma | Hayır | Evet | Hayır | Hayır |
 | Şirket/HR duyurusu oluşturma | Hayır | Hayır | Evet | Evet |
 | Personel ekleme/güncelleme | Hayır | Hayır | Evet | Evet |
 | Personeli pasife alma | Hayır | Hayır | Evet | Evet |
@@ -226,9 +238,16 @@ bir özellik olarak tasarlanacaktır.
 | Rol atama/değiştirme | Hayır | Hayır | Hayır | Evet |
 | Envanter ve zimmet yönetimi | Hayır | Hayır | Hayır | Evet |
 | Güvenlik ayarları ve audit | Hayır | Hayır | Hayır | Evet |
-| Duyuru/yorum moderasyonu | Hayır | Hayır | HR kapsamı | Evet |
+| Audit log kayıtlarını görüntüleme | Hayır | Hayır | Hayır | Evet |
+| Duyuru/yorum moderasyonu | Hayır | Hayır | Takım duyurularını denetler | Evet |
 
-HR kendi izin talebini normal çalışan gibi oluşturur. Rutin onay ilgili yöneticidedir.
+HR kendi izin talebini normal çalışan gibi oluşturur. `Evet*` işaretli Yönetici davranışı yalnız aktif, kendisine atanmış aktif doğrudan yöneticisi bulunan non-root Yönetici için geçerlidir; kök Yönetici kendi izin talebini oluşturamaz ve kendi izin talepleri endpoint'ine erişemez. Rutin onay ilgili yöneticidedir.
+
+Yukarıdaki Admin satırı şirket geneli taleplerin yönetim/işleme görünürlüğünü ifade eder; `GET /api/leave-types` izin türü lookup sözleşmesi değildir. İzin türü lookup aktif Personel, HR, uygun non-root Yönetici ve Admin tarafından kullanılabilir.
+
+Rezervasyon oluşturma, kendi geçmişini görüntüleme ve kendi başlamamış aktif rezervasyonunu iptal etme dört aktif role açıktır. Admin ayrıca şirket geneli rezervasyon geçmişini filtreleyebilir ve başkasının başlamamış aktif rezervasyonunu zorunlu güvenli nedenle iptal edebilir.
+
+PERSONEL, YONETICI ve HR talep edilebilir ekipman kataloğunu görüntüler. PERSONEL ve HR yalnız kendi ekipman taleplerini görür; YONETICI kendi ekipman talebini oluşturmaz ve yalnız doğrudan takımının taleplerini işler. ADMIN şirket geneli izin/ekipman taleplerini bekleyen, onaylanan ve reddedilen durumlarıyla yönetim amacıyla görüntüler; ekipmanları ayrı katalog yerine daha kapsamlı envanter ve zimmet yönetimi içinde görür.
 
 ## 6. MVP Geliştirme Aşamaları
 
@@ -267,7 +286,7 @@ HR kendi izin talebini normal çalışan gibi oluşturur. Rutin onay ilgili yön
 
 ### Aşama 1 — Personel, profil ve HR
 
-**Durum:** `[-]` Personel modeli, Admin rol değiştirme, HR personel oluşturma/güncelleme ve parola akışları hazır; HR pasifleştirme, profil ve ekip dizini bekliyor.  
+**Durum:** `[-]` Personel modeli, Admin rol/parola ve hedef yetenek yönetimi, HR personel oluşturma/güncelleme/pasifleştirme, Faz 6 personel yönetimi okuma sözleşmeleri, parola, kendi profilini görüntüleme/güncelleme, departman/yetenek yönetimi ve güvenli silme, ekip dizini/hiyerarşi ve güvenli profil fotoğrafı backend akışları hazır; personel/profil/ekip dizini tarafındaki ürün ekranları gerçek API’lerle entegre, kalan genel ürünleştirme işleri Aşama 6’da izleniyor.  
 **Tahmin:** 5–8 gün  
 **Zorluk:** Orta–Zor
 
@@ -290,7 +309,7 @@ HR kendi izin talebini normal çalışan gibi oluşturur. Rutin onay ilgili yön
 
 - [x] `HR` değerini sabit rol enum’una ekle
 - [x] HR rol kaydını veritabanına ekle
-- [-] HR rolünün JWT ve frontend tarafında taşınmasını doğrula — backend JWT doğrulandı, frontend bekliyor
+- [x] HR rolünün JWT, auth context, role guard ve frontend menü filtrelerinde taşındığını doğrula
 - [x] Admin rol atama/değiştirme akışını oluştur
 - [x] Rol değişikliğinde kullanıcının bütün refresh token’larını iptal et
 - [x] Rol değişikliği işlemini audit et
@@ -300,42 +319,110 @@ HR kendi izin talebini normal çalışan gibi oluşturur. Rutin onay ilgili yön
 - [x] İlk girişte zorunlu parola değiştirme ve `428` login akışını oluştur
 - [x] Authenticated personelin istediği zaman parola değiştirme akışını oluştur
 - [x] Parola değişikliğinde refresh tokenları iptal et ve işlemi audit et
+- [x] Admin’in başka personelin parolasını güvenli biçimde sıfırlamasını sağla
+    - Yalnız aktif Admin, `PERSONEL`, `HR` ve `YONETICI` hedefe geçici parola atayabilir; öz-hedef ve Admin hedef yasaktır.
+    - BCrypt hash, zorunlu ilk parola flag’i, refresh-token iptali ve güvenli audit aynı transaction içinde uygulanır.
 - [x] HR personel güncelleme
-- [ ] HR personeli pasife alma
+- [x] HR personeli pasife alma
+- [x] HR/Admin personeli yeniden aktifleştirme
+    - Body içermeyen `PATCH /api/hr/personel/{personelId}/aktiflestir` sözleşmesi ve hedef rol matrisi uygulandı.
+    - Gerçek değişiklikte güvenli audit, zaten aktif hedefte yetki kontrollerinden sonra auditsiz no-op davranışı sağlandı.
+    - Yönetici yeniden aktifleştirildiğinde eski doğrudan bağlıların otomatik geri atanmaması ve ekip dizini görünürlüğü test edildi.
 - [x] HR departman atama
 - [x] HR yönetici atama
-- [ ] Pasife alınan personeli aktif ekip dizininden çıkar
-- [ ] Personel/HR/Admin endpoint’lerinde rol ve ownership kontrollerini uygula
+- [x] Yönetici atamalarında iki kişilik ve uzun döngüleri service katmanında engelle
+- [x] Pasife alınan personeli aktif ekip dizininden çıkar
+- [x] Personel/HR/Admin endpoint’lerinde rol ve ownership kontrollerini uygula
+- [x] Faz 6 HR/Admin personel yönetimi okuma sözleşmelerini oluştur
+    - [x] Sayfalı ve filtrelenebilir yönetim personel listesi
+    - [x] Tek personel yönetim detayı
+        - [x] Admin hedefli yetenek formu için alfabetik mevcut yetenek `[{ id, ad }]` listesini döndür
+    - [x] Departmana göre atanabilir yönetici lookup’u
+    - [x] Mevcut mutation’larda aktif aktör ve hedef rol matrisini uygula
 
 #### Profil ve ekip dizini
 
-- [ ] Kendi profilini görüntüleme endpoint’ini oluştur
-- [ ] İzin verilen profil alanlarını güncelleme endpoint’ini oluştur
-- [ ] Profil response’una mezuniyet yılını aktar
-- [ ] Departman bilgilerini listeleme/yönetme akışını oluştur
-- [ ] Yetenek bilgilerini listeleme/yönetme akışını oluştur
-- [ ] Personel yeteneklerini güncelleme akışını oluştur
-- [ ] Ekip dizini sorgusunu oluştur
-- [ ] Ekip dizininde departman filtresi
-- [ ] Ekip dizininde yetenek filtresi
-- [ ] Pasif personeli varsayılan ekip dizini sonucundan çıkar
+- [x] Kendi profilini görüntüleme endpoint’ini oluştur
+- [x] İzin verilen profil alanlarını güncelleme endpoint’ini oluştur
+- [x] Departman bilgilerini alfabetik listeleme endpoint’ini oluştur
+- [x] Departman ekleme/güncelleme yönetim akışını oluştur
+    - `POST /api/departments` ve `PATCH /api/departments/{departmanId}` yalnız aktif HR/Admin rollerine açıktır.
+    - Case-insensitive duplicate ve database unique-constraint yarışı kontrollü `409` döner; rename mevcut personel ilişkilerini korur.
+    - Exact normalize eşitlik no-op’tur; gerçek oluşturma/güncelleme audit ile aynı transaction içinde uygulanır.
+- [x] Kullanılmayan departmanı güvenli biçimde sil
+    - Aktif/pasif herhangi bir personele bağlı departman cascade uygulanmadan `409` ile korunur.
+    - Pessimistic lock, FK/constraint fallback ve aynı-transaction `DEPARTMAN_SILINDI` auditi uygulanır.
+- [x] Yetenek bilgilerini alfabetik listeleme endpoint’ini oluştur
+- [x] Yetenek ekleme/güncelleme yönetim akışını oluştur
+    - `POST /api/skills` ve `PATCH /api/skills/{yetenekId}` yalnız aktif HR/Admin rollerine açıktır.
+    - Case-insensitive duplicate `409`; rename mevcut personel-yetenek ilişkilerini korur.
+    - Oluşturma/güncelleme audit ile aynı transaction içinde uygulanır.
+- [x] Kullanılmayan yeteneği güvenli biçimde sil
+    - Herhangi bir personel-yetenek ilişkisi bulunan yetenek cascade uygulanmadan `409` ile korunur.
+    - Pessimistic lock, constraint fallback ve aynı-transaction `YETENEK_SILINDI` auditi uygulanır.
+- [x] Personel yeteneklerini güncelleme akışını oluştur
+    - Endpoint `PUT /api/profil/yetenekler`; tam-değiştirme ve küme semantiği kullanılır.
+    - Boş liste bütün yetenekleri kaldırır; aynı küme no-op olarak `204` döner ve audit oluşturmaz.
+    - Değişiklikler yalnız JWT principal personelinde, fark tabanlı ve audit ile aynı transaction içinde uygulanır.
+- [x] Ekip dizini sorgusunu oluştur
+    - Endpoint `GET /api/ekip-dizini`; tüm authenticated roller erişebilir.
+    - Görünürlük matrisi: PERSONEL yalnız kendi departmanındaki aktif kişileri; YONETICI ve HR, Adminler dışındaki bütün aktif kişileri; ADMIN bütün aktif kişileri görür.
+    - Rol/departman sınırı içerik ve count sorgularında uygulanır; kullanıcı filtreleri bu sınırı genişletemez.
+    - Sade pagination response’u `{ icerik, sayfa, sayfaBoyutu, toplamKayit, toplamSayfa }` kullanılır.
+    - Aktif personel sayfası ile o sayfadaki personellerin bütün yetenekleri iki toplu sorguyla alınır; collection fetch join ile pagination yapılmaz.
+    - Sabit sıralama `ad`, `soyad`, ardından response’ta gösterilmeyen `personelId` biçimindedir.
+- [x] Ekip dizininde departman filtresi
+    - Opsiyonel `departmanId`; bulunmayan pozitif ID boş `200 OK`, sıfır/negatif ID kontrollü `400` döndürür.
+- [x] Ekip dizininde yetenek filtresi
+    - Opsiyonel `yetenekId`; departman filtresiyle birlikte `AND` uygulanır, bulunmayan pozitif ID boş `200 OK`, sıfır/negatif ID kontrollü `400` döndürür ve eşleşen personelin bütün yetenekleri response’ta korunur.
+- [x] Ekip dizininde ad, soyad ve tam ad araması
+    - Opsiyonel `arama`; departman ve yetenek filtreleriyle `AND` uygulanır, pagination ve sabit sıralama korunur.
+- [x] Pasif personeli varsayılan ekip dizini sonucundan çıkar
+    - Pasif personel listelenmez; pasif JWT principal kalan token ömründe `403` alır.
+- [x] Güvenli yönetici hiyerarşisi okumalarını oluştur
+    - Aktif HR/Admin için generic aktif organizasyon foresti; aktif PERSONEL/YONETICI için yalnız en yakın iki üst sağlanır.
+    - Response güvenli görüntüleme alanlarıyla sınırlıdır; legacy döngüler `409` ile tespit edilir ve kısmi veri dönmez.
+- [x] Hiyerarşi forestini arama, departman ve yetenek filtreleriyle buda
+    - HR/Admin filtreli görünümünde yalnız eşleşen kişiler ve köke kadar zorunlu üst zincirler kalır; ilgisiz alt, kardeş ve yan dallar dönmez.
+    - Hiyerarşi düğümleri gerçek ilişkiye dayalı `yoneticinMi` ve backend hesaplı `bugunIzinDurumu` taşır; yönetici budanmışsa bütün `yoneticinMi` değerleri `false` kalır, filtre dışı personele ait izin bilgisi sızdırılmaz.
+- [x] Yöneticiye yalnız kendi güvenli hiyerarşi görünümünü sağla
+    - `GET /api/ekip-dizini/yonetici-hiyerarsim`; en fazla iki üst, aktör ve yalnız aktörün aktif doğrudan/dolaylı astlarını döndürür.
+    - `aktorDepartman { id, ad }` metadata’sı ve aynı filtre sözleşmesi sağlanır; PERSONEL/HR/ADMIN erişimi `403` ile engellenir.
 
 #### Profil fotoğrafı güvenliği
 
-- [ ] İzin verilen görsel formatları için allowlist uygula
-- [ ] Gönderilen `Content-Type` değerine tek başına güvenme
-- [ ] MIME ve dosya imzasını/magic byte bilgisini doğrula
-- [ ] Dosya boyutu limiti uygula
-- [ ] Gerekirse görsel çözünürlük limiti uygula
-- [ ] Dosya adını sunucu tarafında rastgele üret
-- [ ] Path traversal girişimlerini engelle
-- [ ] Dosyaları çalıştırılabilir statik kaynak alanından ayrı tut
-- [ ] Eski fotoğrafı değiştirirken güvenli dosya temizliği yap
-- [ ] Sahte uzantı, geçersiz imza ve büyük dosya testleri yaz
+- [x] İzin verilen görsel formatları için JPEG/PNG allowlist uygula
+- [x] Gönderilen `Content-Type` değerine tek başına güvenme
+- [x] MIME ve dosya imzasını/magic byte bilgisini doğrula
+- [x] 2 MB dosya boyutu limiti uygula
+- [x] 2048×2048 ve toplam piksel çözünürlük limitlerini uygula
+- [x] Dosya adını sunucu tarafında UUID olarak üret ve çakışmada üzerine yazma
+- [x] Path traversal girişimlerini engelle
+- [x] Dosyaları çalıştırılabilir statik kaynak alanından ayrı tut
+- [x] Eski fotoğrafı değiştirirken commit/rollback güvenli dosya temizliği yap
+- [x] Ham görseli metadata ve ek payload taşımadan en fazla 1024 piksel uzun kenarla yeniden üret
+- [x] Sahte uzantı, geçersiz imza, büyük dosya, rollback ve yetki testleri yaz
+- [x] Authenticated binary GET’i `nosniff` ve private cache başlıklarıyla sun
+- [x] Eşzamanlı stale personel güncellemelerini optimistic locking ile engelle
+
+#### Sıradaki backend backlog
+
+- [x] Güvenli profil fotoğrafı yükleme, görüntüleme ve silme akışını tamamla
+- [x] Aktif Admin için güvenli, sayfalı ve filtreli audit log okuma endpoint’ini ve sorgu indeks migration’ını tamamla
+- [ ] Audit ekranında aktör/hedef filtrelerini ad veya kullanıcı adıyla aranabilir yap; kesin seçimde mevcut UUID filtresini koru, kullanıcıya UUID yazdırma ve aynı isimli personelleri güvenli biçimde ayırt et
+    - Yalnız aktif Admin’e açık, sayfalı ve minimum arama uzunluğu bulunan güvenli bir personel lookup sözleşmesi tasarla.
+    - Audit geçmişinde bulunabilmeleri için aktif/pasif bütün roller ile Admin ve öz-aktör kayıtlarını kapsa; yalnız `{ personelId, ad, soyad, kullaniciAdi, rol, aktif }` alanlarını döndür.
+    - Frontend ad veya kullanıcı adıyla arama yapsın, aynı isimli kişileri kullanıcı adı/rol ile ayırsın ve seçilen kaydın UUID’sini mevcut audit filtresine göndersin.
+- [x] Production için `personel.version` kontrollü manuel schema migration’ını hazırla
+- [x] Optimistic-lock çatışmasını kontrollü `409 Conflict` response’una eşle
+- [ ] Bütün şemayı Flyway/Liquibase baseline migration’larına taşı ve production’da `ddl-auto=update` kullanımını kapat
+- [x] Yetenek silme davranışını tasarla ve ilişkili kayıtları `409` ile koruyan güvenli silmeyi uygula
+- [ ] Yetenek pasifleştirme/soft-delete ihtiyacı için ayrı ürün kararı ver
+- [-] Ekipman ve duyuru backend modüllerini roadmap aşamalarına göre tamamla — ekipman backend’i tamamlandı, ekipman frontend’i ve duyuru modülü bekliyor
 
 ### Aşama 2 — Yıllık izin ve şirket takvimi
 
-**Durum:** `[-]` Entity/DTO iskeletleri var; çalışan izin modülü yok.  
+**Durum:** `[-]` Tatil takvimi ile izin talebi oluşturma, owner iptali, Yönetici/Admin kuyrukları ve onay/red backend ile frontend’de çalışıyor; izin türü yönetimi, hizmet yılı/devreden bakiye modeli ve takvimde izin olayları açık.  
 **Tahmin:** 8–12 gün  
 **Zorluk:** Zor
 
@@ -345,53 +432,78 @@ HR kendi izin talebini normal çalışan gibi oluşturur. Rutin onay ilgili yön
 - [x] Temel izin türü entity’sini oluştur
 - [x] İzin talep request/response DTO iskeletlerini oluştur
 - [x] İzin durum ilişkisinin veri modeli temelini oluştur
+- [x] Sabit talep durumlarını `TalepDurum` enum kodlarıyla eşle
+- [x] İzin türüne yıllık haktan düşme davranışını ekle
 
 #### Veri modeli ve migration
 
-- [ ] İzin türüne “yıllık haktan düşer mi?” alanı ekle
-- [ ] Tam/yarım gün destekli resmî ve şirket tatili tablosu oluştur
-- [ ] Tatil türünü sabit/değişken/şirket günü olarak ayırt et
+- [x] İzin türüne “yıllık haktan düşer mi?” alanı ekle
+- [x] Tam/yarım gün ve çok günlük grup destekli resmî/şirket tatili tablosu oluştur
+- [x] Tatil türünü sabit/değişken/şirket günü olarak ayırt et
 - [ ] İzin hakkı kazanımlarını hizmet yılı bazında izlenebilir tutacak modeli oluştur
 - [ ] Mevcut sabit `yillikIzinHakki` alanından birikmiş hak modeline geçiş planı oluştur
 - [ ] Mevcut personel verileri için izin hakkı migration yaklaşımını belirle
-- [ ] `IzinBilgileri.isGunuSayisi` alanını `0,5` günü güvenle temsil edecek `BigDecimal` tabanlı tipe dönüştür
-- [ ] İzin response DTO’larındaki gün sayısı alanlarını yarım gün destekleyecek şekilde güncelle
+- [x] `IzinBilgileri.isGunuSayisi` alanını `0,5` günü güvenle temsil edecek `BigDecimal` tabanlı tipe dönüştür
+- [x] İzin response DTO’larındaki gün sayısı alanlarını yarım gün destekleyecek şekilde güncelle
+- [x] Sabit talep durumları, başlangıç izin türleri, sorgu indeksleri ve create audit ENUM değeri için idempotent MySQL migration ekle
+- [x] Yönetici/Admin karar alanı, sorgu indeksleri ve onay/red audit ENUM değerleri için idempotent MySQL migration ekle
+- [x] Owner iptal audit ENUM değeri için karar migration’ından sonra çalıştırılan idempotent MySQL migration ekle
 - [ ] Sabit tatiller için yıllık üretim/seed yaklaşımı oluştur
+
+Gelecekte değerlendirilecek hak modeli:
+
+- Mevcut `Personel.yillikIzinHakki` alanı bu aşamada korunur.
+- Hizmet yılına göre 14/20/26 gün tahakkuk, yıl bazlı hak kayıtları, devreden bakiye ve mevcut verilerin migration’ı ayrı bir mimari/veri tasarımı olarak ele alınacaktır; mevcut teslimin parçası değildir.
 
 #### İş kuralları
 
 - [ ] Tamamlanan hizmet yılına göre 14/20/26 gün hak hesapla
 - [ ] Kullanılmayan izin hakkını sonraki yıllara devret
-- [ ] Hafta sonlarını iş günü hesabından çıkar
-- [ ] Tam günlük tatilleri izin hesabından çıkar
-- [ ] Yarım günlük tatilleri `0,5` gün olarak hesapla
-- [ ] Hastalık iznini yıllık izin hakkından düşme
-- [ ] Yalnızca “yıllık haktan düşer” işaretli izin türlerini bakiyeden düş
-- [ ] Kullanılan bakiyeyi yalnızca onaylanmış izinlerden hesapla
-- [ ] Bakiyeyi aşan talebi engelle
-- [ ] Bitiş tarihi başlangıç tarihinden önce olan talebi engelle
+- [x] Hafta sonlarını iş günü hesabından çıkar
+- [x] Tam günlük tatilleri izin hesabından çıkar
+- [x] Yarım günlük ve çok günlük tatilleri kapsanan her iş gününde `0,5` gün olarak hesapla
+- [x] Hastalık/mazeret gibi yıllık haktan düşmeyen türleri bakiye kontrolünden muaf tut
+- [x] Yalnızca “yıllık haktan düşer” işaretli izin türlerini bakiyeden düş
+- [x] Profil kalan bakiyesinde kullanılan miktarı yalnızca onaylanmış izinlerden hesapla
+- [x] Yeni talepte onaylanmış tüketim ile bekleyen rezervasyonu birlikte değerlendirip bakiyeyi aşmayı engelle
+- [x] Geçmiş, ters, 366 günü aşan veya sıfır iş günü üreten talep aralığını engelle
 - [ ] Bekleyen talep için düzenleme kurallarını uygula
-- [ ] Bekleyen talep için iptal kurallarını uygula
-- [ ] Onay/reddetmeyi yalnızca doğrudan yöneticiye aç
-- [ ] Çakışan izin taleplerini kontrol et
-- [ ] Kritik durum değişikliklerini audit et
+- [x] Owner’ın geçmiş tarihli olsa dahi bekleyen kendi talebini iptal etmesini sağla; son durumlar geri alınamaz
+- [x] Onay/reddetmeyi işlem anındaki aktif doğrudan yöneticiye ve şirket geneli Admin’e aç
+- [x] Başlamış veya geçmiş bekleyen izin talebinin sonradan onaylanmasını karar anı tarih doğrulamasıyla engelle
+- [x] Aynı kişinin bekleyen/onaylı taleplerinde etkili iş günü çakışmasını kontrol et
+- [x] Talep oluşturmayı `IZIN_TALEBI_OLUSTURULDU` olayıyla aynı transaction içinde audit et
+- [x] Owner iptalini `IZIN_TALEBI_IPTAL_EDILDI` olayıyla audit et
+- [x] Yetkili yönetici/Admin onayını `IZIN_TALEBI_ONAYLANDI` olayıyla audit et
+- [x] Yetkili yönetici/Admin reddini `IZIN_TALEBI_REDDEDILDI` olayıyla audit et
+- [ ] Talep düzenleme ayrıca onaylanırsa `IZIN_TALEBI_GUNCELLENDI` olayını ekle
 
 #### API ve ekranlar
 
-- [ ] Personel/HR izin talebi oluşturma
-- [ ] Personel/HR kendi izin geçmişini görüntüleme
-- [ ] Yönetici doğrudan takımının izin taleplerini görüntüleme
-- [ ] Yönetici izin onaylama/reddetme
-- [ ] HR şirket geneli izin kayıtlarını görüntüleme
+- [x] Aktif Personel, HR, uygun non-root Yönetici ve Admin için izin türü lookup
+- [x] Aktif Personel, HR ve uygun non-root Yönetici için iş günü önizleme
+- [x] Aktif Personel, HR ve uygun non-root Yönetici için izin talebi oluşturma
+- [x] Talep oluşturabilen roller için owner-only, sayfalı ve durum filtreli kendi izin geçmişi
+- [x] Owner’ın kendi bekleyen izin talebini iptal etmesi
+- [x] Yönetici doğrudan takımının izin taleplerini görüntüleme
+- [x] Yönetici izin onaylama/reddetme
+- [x] Admin şirket geneli izin kayıtlarını görüntüleme ve işleme
 - [ ] HR/Admin izin türü yönetimi
-- [ ] HR/Admin tatil takvimi yönetimi
+    - Gelecekte ayrıca tasarlanacaktır. Kullanılmış türü fiziksel silmek yerine geçmiş kayıtları koruyan pasifleştirme/yeniden adlandırma yaklaşımı değerlendirilmelidir; mevcut kapsamda uygulanmayacaktır.
+- [x] HR/Admin tek ve çok günlük tatil takvimi backend yönetimi
 - [ ] Takvimde kişisel izinleri gösterme
+    - Gelecekte yalnız owner’ın `ONAYLANDI` izinlerini, görüntülenen tarih aralığıyla kesişim mantığı kullanarak güvenli takvim olayı biçiminde döndüren salt-okunur backend sözleşmesi eklenecektir.
 - [ ] Takvimde yönetici için takım izinlerini gösterme
-- [ ] Takvimde resmî ve şirket tatillerini gösterme
+    - Gelecekte Yönetici yalnız işlem anındaki aktif doğrudan çalışanlarının `ONAYLANDI` izinlerini görecektir; dolaylı astlar ve başka ekipler kapsama alınmayacaktır.
+    - Takım görünümünde çalışan adı, tarih aralığı ve tam/yarım gün bilgisi yeterlidir; izin türü, talep/karar notu ve gereksiz personel alanları açılmayacaktır. Okuma işlemleri audit üretmeyecektir.
+- [x] Takvimde tek ve çok günlük resmî/şirket tatillerini grup halinde gösterme
+- [x] Takvimde aktif çalışanların doğum günlerini şirket genelinde gösterme
+  - [x] Güvenli tarih-aralığı backend endpoint’i; doğum yılı ve gereksiz personel alanları response’a eklenmiyor
+  - [x] Frontend takvim event entegrasyonu
 
 ### Aşama 3 — Ekipman, envanter ve zimmet
 
-**Durum:** `[-]` Entity/DTO iskeletleri var; çalışan iş akışı yok.  
+**Durum:** `[-]` Backend iş akışı, manuel MySQL migration ve güvenlik/concurrency testleri tamamlandı; frontend ekranları bekliyor.  
 **Tahmin:** 5–8 gün  
 **Zorluk:** Orta–Zor
 
@@ -403,25 +515,33 @@ HR kendi izin talebini normal çalışan gibi oluşturur. Rutin onay ilgili yön
 - [x] Zimmet entity’sini oluştur
 - [x] Ekipman ve zimmet DTO iskeletlerini oluştur
 
-#### Bekleyen işler
+#### Tamamlanan backend işleri
 
-- [ ] Personel/HR ekipman talebi oluşturma
-- [ ] Personel/HR kendi ekipman taleplerini görüntüleme
-- [ ] Bekleyen ekipman talebini düzenleme
-- [ ] Bekleyen ekipman talebini iptal etme
-- [ ] Yöneticinin yalnızca doğrudan ekibinin taleplerini görmesi
-- [ ] Yönetici ekipman talebi onaylama/reddetme
-- [ ] Admin ekipman tipi yönetimi
-- [ ] Admin ekipman envanteri yönetimi
-- [ ] Onaylanan talep için zimmet kaydı oluşturma
-- [ ] Zimmet sırasında uygun stok kontrolü
-- [ ] İade işleminde ekipmanı tekrar depoya alma
-- [ ] Zimmet geçmişini silmeden koruma
-- [ ] Stok, onay, zimmet ve iade testleri
+- [x] Personel/HR ekipman talebi oluşturma
+- [x] Personel/HR kendi ekipman taleplerini görüntüleme
+- [x] Bekleyen ekipman talebini düzenleme
+- [x] Bekleyen ekipman talebini iptal etme
+- [x] Yöneticinin yalnızca doğrudan aktif ekibinin taleplerini görmesi
+- [x] Yönetici/Admin ekipman talebi onaylama/reddetme
+- [x] Admin ekipman tipi yönetimi
+- [x] Admin ekipman envanteri yönetimi
+- [x] Onaylanan talep için atomik zimmet kaydı oluşturma
+- [x] Zimmet sırasında uygun stok ve eşzamanlılık kontrolü
+- [x] İade işleminde ekipmanı tekrar depoya alma
+- [x] Zimmet geçmişini silmeden koruma
+- [x] Personel pasifleştirme/rol geçişinde bekleyen talepleri güvenli iptal etme
+- [x] MySQL migration, rollback, rol/ownership, concurrency ve HTTP security testleri
+
+#### Bekleyen frontend ve MVP sonrası işler
+
+- [ ] Personel/HR talep oluşturma, geçmiş, güncelleme ve iptal ekranları
+- [ ] Yönetici takım karar kuyruğu ve Admin şirket geneli karar ekranı
+- [ ] Admin ekipman tipi, envanter ve zimmet/iade ekranları
+- [ ] Doğrudan zimmet atama, bakım süreci, çoklu depo, QR/barkod ve tip-bazlı dinamik özellikler için ayrı ürün/veri modeli kararı
 
 ### Aşama 4 — Oda rezervasyonu ve ürün takvimi
 
-**Durum:** `[-]` Veri modeli, route ve takvim şablonu var; çalışan rezervasyon modülü ve takvim entegrasyonu yok.  
+**Durum:** `[-]` Backend ve frontend oda rezervasyonu, geçmiş/iptal, Admin şirket geçmişi, pasifleştirme, şirket takviminde rezervasyon gösterimi ve dashboard doluluk akışları tamamlandı; ürün takviminin olay filtreleri ile kişisel/takım izin olayları bekliyor.  
 **Tahmin:** 4–6 gün  
 **Zorluk:** Orta
 
@@ -433,28 +553,32 @@ HR kendi izin talebini normal çalışan gibi oluşturur. Rutin onay ilgili yön
 - [x] `/calendar` frontend rotasını oluştur
 - [x] TailAdmin takvim şablonunu projede koru
 
-#### Bekleyen rezervasyon işleri
+#### Backend rezervasyon işleri
 
-- [ ] Oda repository/service/controller akışını oluştur
-- [ ] Oda listesini getir
-- [ ] Rezervasyon repository/service/controller akışını oluştur
-- [ ] Tarih ve odaya göre rezervasyonları listele
-- [ ] Saatlik rezervasyon oluştur
-- [ ] Bitiş saatinin başlangıç saatinden sonra olmasını doğrula
-- [ ] Çakışan zaman aralıklarını backend’de engelle
-- [ ] Kullanıcının yalnızca kendi rezervasyonunu silebilmesi
-- [ ] Rezervasyon ownership ve çakışma testleri
+- [x] Oda repository/service/controller akışını oluştur
+- [x] Oda listesini ve kapasiteleri getir
+- [x] Rezervasyon repository/service/controller akışını oluştur
+- [x] Tarih aralığı ve odaya göre aktif rezervasyonları listele
+- [x] Saatlik rezervasyon oluştur
+- [x] Çalışma saati, tam/yarım gün tatil, süre ve ileri tarih sınırlarını doğrula
+- [x] Aynı oda ve aynı owner interval çakışmalarını backend’de engelle
+- [x] Owner/Admin başlamamış aktif rezervasyon iptalini soft-state ile uygula
+- [x] Kendi ve Admin rezervasyon geçmişini filtreli/sayfalı sun
+- [x] Personel pasifleştirmeyi başlamamış rezervasyon iptaliyle atomik bağla
+- [x] Ownership, audit, rollback ve gerçek MySQL concurrency testlerini ekle
+- [x] Aktif rezervasyonla çakışan tatil oluşturma/güncellemeyi atomik `409` ile engelle; iptal edilen rezervasyon sonrasında yeniden denemeye izin ver
 
 #### Ürün takvimi
 
-- [ ] TailAdmin demo event’lerini kaldır
-- [ ] Takvimi gerçek backend verilerine bağla
+- [x] TailAdmin demo event’lerini kaldır
+- [x] Takvimi gerçek backend verilerine bağla
 - [ ] Resmî/şirket tatili filtresi
 - [ ] Kişisel izin filtresi
 - [ ] Yönetici takım izinleri filtresi
 - [ ] Oda rezervasyonları filtresi
+- [x] Oda rezervasyonlarını güvenli alanlarla şirket takviminde göster
 - [ ] Farklı olay türlerini tutarlı renk ve açıklamalarla göster
-- [ ] Takvim loading, error ve empty durumlarını oluştur
+- [x] Takvim loading, error ve empty durumlarını oluştur
 
 ### Aşama 5 — Duyurular ve takdir panosu
 
@@ -504,7 +628,7 @@ HR kendi izin talebini normal çalışan gibi oluşturur. Rutin onay ilgili yön
 
 ### Aşama 6 — Dashboard ve frontend ürünleştirme
 
-**Durum:** `[-]` Authentication ekranları ve doğum günü kartı gerçek; dashboard’un kalanı ve ürün ekranları bekliyor.  
+**Durum:** `[-]` Authentication, ekip dizini, tatil/doğum günü takvimi, izin ve rezervasyon backend/frontend akışları hazır; ekipman backend’i hazır, ekipman frontend’i ile duyuru, takdir ve kalan dashboard ürünleştirmeleri bekliyor.  
 **Tahmin:** 5–8 gün  
 **Zorluk:** Orta
 
@@ -513,43 +637,51 @@ HR kendi izin talebini normal çalışan gibi oluşturur. Rutin onay ilgili yön
 - [x] Doğum günü verisini gerçek backend sorgusundan getir
 - [x] Doğum günü kartını backend’e bağla
 - [x] Doğum günü kartında loading/error/empty durumlarını göster
+- [x] Role göre görünür aktif ekip üyesi sayısını dashboard özetine ekle
+- [x] Aynı görünür kümeden ilk 5 güvenli ekip dizini kaydını dashboard özetine ekle
 - [ ] Son duyuruları role ve hedef kitleye göre göster
 - [ ] Bekleyen talepleri role göre göster
-- [ ] Bugün izinli personel özetini göster
-- [ ] Oda doluluk özetini göster
+- [x] Dashboard ekip özeti satırlarında bugünün tam/yarım gün izin durumunu göster
+- [x] Dashboard response’una güvenli oda doluluk özetini ekle
+- [x] Oda doluluk özetini frontend kartında göster
 - [ ] Son takdirleri göster
-- [ ] Kalan izin bilgisini göster
-- [ ] Dashboard response’unu role göre düzenle
-- [ ] Dashboard için backend testleri yaz
+- [x] Backend hesaplı toplam/kullanılan/onay bekleyen/kalan izin bilgisini göster
+- [x] Dashboard response’unu role göre düzenle
+- [x] Dashboard için backend testleri yaz
 
 #### Kalan izin kartı
 
 TailAdmin `MonthlyTarget` bileşeni dönüştürülecek:
 
-- [ ] Bileşeni `KalanIzinKarti` olarak yeniden adlandır
-- [ ] Başlığı “Kalan İzin Hakkın” yap
-- [ ] Yüzdeyi `kalan / toplam hak × 100` ile hesapla
-- [ ] Alt alanları `Toplam Hak / Kullanılan / Kalan` yap
-- [ ] `+10%` alanını bekleyen izin bilgisine dönüştür veya kaldır
-- [ ] Gelir/hedef metinlerini kaldır
-- [ ] Kartı izin sayfasına bağla
-- [ ] Yönetici/Admin için kartı gizle veya role uygun bir özetle değiştir
+- [x] Bileşeni `KalanIzinKarti` olarak yeniden adlandır
+- [x] Başlığı “Kalan İzin Hakkın” yap
+- [x] Yüzdeyi backend’in kullanılabilir kalan bakiyesine göre hesapla
+- [x] Alt alanları `Toplam Hak / Kullanılan / Kalan` yap
+- [x] `+10%` alanını onay bekleyen izin bilgisine dönüştür
+- [x] Gelir/hedef metinlerini kaldır
+- [x] Kartı izin sayfasına bağla
+- [x] Backend `izinBakiyesi=null` döndürdüğünde kartı gizle
 
 #### Navigasyon ve sayfalar
 
-- [-] `/calendar` rotası ve demo takvim mevcut; ürün dönüşümü Aşama 4’te takip ediliyor
+- [x] `/calendar` gerçek tatil API’sine bağlı; tek ve çok günlük tatil grubu görüntüleme/yönetme akışları hazır
 - [x] Sidebar’da “Ekip Dizini” ana etiketini oluştur
-- [-] Basic Tables ekranı ekip dizini için korunuyor; içerik hâlâ demo
-- [ ] Ekip dizini içeriğini gerçek personel verisine dönüştür
-- [ ] Ekip dizinini `/ekip-dizini` rotasına taşı
+- [x] Ekip dizini içeriğini gerçek personel verisine dönüştür
+- [x] Ekip dizinini `/ekip-dizini` rotasına taşı
 - [x] Talepler menüsünde izin ve ekipman başlıklarını ayır
-- [ ] `/talepler/izin` rotasını ve sayfasını oluştur
+- [x] Talepler menüsüne role göre rezervasyon, takım izin talepleri ve tüm izin talepleri seçeneklerini ekle
+- [ ] Duyurular menüsünü bütün rollere görünür, oluşturma ve moderasyon eylemlerini role göre sayfa içinde sınırlı tasarla
+- [ ] PERSONEL, YONETICI ve HR için talep edilebilir ekipman kataloğu menüsünü ekle
+- [-] HR ve ADMIN yönetim menülerini ürünleştir — personel/katalog ve tatil eylemleri, ADMIN izin karar kuyruğu ve audit ekranı hazır; envanter/zimmet bekliyor
+- [x] ADMIN için audit log menüsünü, role-protected route’u ve filtreli/sayfalı ekranı ekle
+- [ ] ADMIN için rol yönetimi ve envanter/zimmet menülerini tamamla
+- [x] Kendi izin oluşturma/geçmiş/iptal sayfasını ve Yönetici/Admin karar listelerini route’lara bağla
 - [ ] `/talepler/ekipman` rotasını ve sayfasını oluştur
+- [ ] Duyuru ve kalan yönetim menüleri için gerçek route ve sayfaları backend sözleşmeleri hazır olduğunda oluştur
 - [ ] `/form-elements` ve `/basic-tables` gibi demo route adlarını kaldır
-- [ ] Menüyü role göre filtrele
-- [ ] HR menü seçeneklerini ekle
-- [ ] Yönetici menü seçeneklerini kendi takım yetkilerine göre düzenle
-- [ ] Route seviyesinde role uygun kullanıcı deneyimi sağla
+- [x] Menüyü role göre filtrele
+- [x] Route seviyesinde role uygun kullanıcı deneyimi sağla
+- [x] `RoleRoute` guard’ını oluştur ve personel/katalog yönetim rotalarında kullan
 
 #### Frontend authentication sağlamlaştırması
 
@@ -594,12 +726,12 @@ Görevler:
 - [x] Pasif personel login testi
 - [x] Pasif personel refresh testi
 - [x] Rol değişikliği ve refresh token iptali testi
-- [ ] Tatil ve iş günü hesabı sınır testleri
-- [ ] Yarım gün `0,5` hesaplama testleri
+- [x] Tatil ve iş günü hesabı sınır testleri
+- [x] Yarım gün `0,5` hesaplama testleri
 - [ ] Kıdem ve devreden bakiye testleri
 - [ ] Takım duyurusu görünürlük testleri
-- [ ] Rezervasyon çakışma ve ownership testleri
-- [ ] Ekipman stok, zimmet ve iade testleri
+- [x] Rezervasyon çakışma, ownership, rollback ve concurrency testleri
+- [x] Ekipman stok, talep/karar, zimmet/iade, rollback ve concurrency testleri
 - [ ] Dosya yükleme kötüye kullanım testleri
 - [x] Security 401/403 response testleri
 
@@ -611,7 +743,7 @@ Görevler:
 - [ ] Role göre menü görünürlüğünü test et
 - [ ] Kritik dashboard kartlarını test et
 - [ ] Loading, error ve empty durumlarını kontrol et
-- [ ] Frontend production build doğrulaması
+- [x] Frontend production build doğrulaması
 
 #### Dokümantasyon ve demo
 
@@ -620,7 +752,7 @@ Görevler:
 - [x] Auth bölümündeki refresh/logout açıklamalarını güncelle
 - [x] Dashboard endpoint yolunun `/api/dashboard/ozet` olduğunu doğrula
 - [ ] Eski kararlarla çelişen doküman maddelerini temizle
-- [ ] README içindeki proje durumunu güncelle
+- [x] README içindeki proje durumunu güncelle
 - [ ] Manuel uçtan uca MVP senaryosu
 - [ ] Demo verileri
 - [ ] Sunum akışı
@@ -680,7 +812,7 @@ Bu tablo yeni veya tekrarlanan görev oluşturmaz. İşlerin asıl görevleri be
 |---|---|---|---:|---|
 | Login timing attack düzeltmesi | `[ ]` Opsiyonel | Kolay | 0,5–1 gün | Olmayan kullanıcı için dummy BCrypt çalıştır |
 | SecurityConfig araştırması | `[x]` | Orta | 0,5–1 gün | Aşama 0 |
-| Profil fotoğrafı güvenliği | `[ ]` MVP | Orta–Zor | 2–4 gün | Aşama 1; güvenli upload olmadan tamamlanmış sayılmaz |
+| Profil fotoğrafı güvenliği | `[x]` | Orta–Zor | 2–4 gün | Aşama 1; upload, authenticated GET, silme ve rollback tamamlandı |
 | Frontend demo temizliği | `[-]` | Kolay–Orta | 1–3 gün | Aşama 6; ürün dönüşümlerinden sonra |
 | JWT anında iptal | `[ ]` MVP sonrası | Orta–Zor | 2–4 gün | Bölüm 7.3 |
 | Dinamik RBAC | `[ ]` MVP sonrası | Çok Zor | 10–18 gün | Bölüm 7.2 |
@@ -717,23 +849,23 @@ Yeni modülün testleri yazılmadan ilgili modül tamamlanmış sayılmaz.
 - [x] Pasif personel login veya refresh ile yeni token alamıyor.
 - [x] HR personel ekleyebiliyor.
 - [x] HR personel güncelleyebiliyor.
-- [ ] HR personeli geçmişini silmeden pasife alabiliyor.
-- [ ] Personel ve HR yıllık izin talebi oluşturabiliyor.
-- [ ] Personel ve HR ekipman talebi oluşturabiliyor.
-- [ ] Yönetici yalnızca doğrudan takımının taleplerini işleyebiliyor.
+- [x] HR personeli geçmişini silmeden pasife alabiliyor.
+- [x] Personel, HR ve uygun non-root Yönetici yıllık izin talebi oluşturabiliyor.
+- [x] Personel ve HR ekipman talebi oluşturabiliyor.
+- [x] Yönetici yalnızca doğrudan takımının ekipman taleplerini işleyebiliyor.
 - [ ] İzin bakiyesi kıdem ve devreden haklara göre hesaplanıyor.
 - [ ] Hafta sonları izin bakiyesinden düşmüyor.
-- [ ] Tam günlük tatiller izin bakiyesinden düşmüyor.
-- [ ] Yarım günlük tatiller `0,5` gün olarak hesaplanıyor.
+- [x] Tam günlük tatiller iş günü hesabında izin bakiyesine tüketim yazmıyor.
+- [x] Yarım günlük tatiller kapsadıkları her hafta içi için `0,5` gün etkisiyle hesaplanıyor.
 - [ ] Hastalık izni yıllık izin hakkından düşmüyor.
 - [ ] Yönetici yalnızca kendi doğrudan takımına duyuru gönderebiliyor.
 - [ ] HR/Admin takım duyurularını denetleyebiliyor.
-- [ ] Admin envanter ve zimmetleri yönetebiliyor.
-- [ ] Oda rezervasyonlarında çakışma engelleniyor.
-- [ ] Kullanıcı yalnızca kendi rezervasyonunu silebiliyor.
+- [x] Admin envanter ve zimmetleri yönetebiliyor.
+- [x] Oda rezervasyonlarında aynı oda ve aynı owner çakışması engelleniyor.
+- [x] Owner kendi başlamamış rezervasyonunu, Admin yetkili kapsamda başkasının rezervasyonunu iptal edebiliyor; kayıt geçmişte korunuyor.
 - [ ] Dashboard gerçek ve role uygun veriler gösteriyor.
-- [ ] Profil fotoğrafı güvenli biçimde yükleniyor.
-- [ ] Frontend menüsü role göre şekilleniyor.
+- [x] Profil fotoğrafı güvenli biçimde yükleniyor, authenticated sunuluyor ve silinebiliyor.
+- [x] Frontend menüsü role göre şekilleniyor.
 - [ ] Kritik yetki ve iş kuralları otomatik testlerle korunuyor.
 - [ ] `API_SPEC.md`, Swagger ve frontend rotaları gerçek uygulamayla uyumlu.
 - [ ] Kullanılmayan TailAdmin demo içerikleri temizlenmiş.
