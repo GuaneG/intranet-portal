@@ -5,18 +5,19 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public record RezervasyonRequest(
-        @NotNull
+        @NotNull @Positive
         Integer odaId,
         @NotNull
-        @FutureOrPresent
         LocalDate tarih,
         @NotNull @Min(0) @Max(23)
         Integer baslangicSaat,
-        @NotNull @Min(0) @Max(23)
+        @NotNull @Min(1) @Max(24)
         Integer bitisSaat,
         @NotBlank
         @Size(max = 50)
-        String baslik
+        String baslik,
+        @NotNull @Positive
+        Integer katilimciSayisi
 
 ) {
 }
