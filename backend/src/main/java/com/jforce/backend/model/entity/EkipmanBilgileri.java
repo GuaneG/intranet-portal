@@ -28,6 +28,9 @@ public class EkipmanBilgileri {
     @Column(name = "ekipman_durum",length = 50,nullable = false)
     private EkipmanDurum ekipmanDurum;
 
+    @Column(name = "kullanim_disi_nedeni", length = 500)
+    private String kullanimDisiNedeni;
+
     public EkipmanBilgileri() {
     }
 
@@ -77,5 +80,13 @@ public class EkipmanBilgileri {
 
     public void setEkipmanDurum(EkipmanDurum ekipmanDurum) {
         this.ekipmanDurum = ekipmanDurum;
+    }
+
+    public String getKullanimDisiNedeni() {
+        return kullanimDisiNedeni;
+    }
+
+    public void setKullanimDisiNedeni(String kullanimDisiNedeni) {
+        this.kullanimDisiNedeni = kullanimDisiNedeni;
     }
 }

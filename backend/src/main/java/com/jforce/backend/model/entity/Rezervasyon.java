@@ -1,14 +1,23 @@
 package com.jforce.backend.model.entity;
 
-import jakarta.persistence.*;
+import com.jforce.backend.model.enums.RezervasyonDurum;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-
-//(tarih,oda_id,baslangic_saati) indexini nasıl göstericeksin
 @Entity
-@Table(name = "rezervasyon", uniqueConstraints = @UniqueConstraint(
-        columnNames = {"tarih", "oda_id", "baslangic_saat"}))
+@Table(name = "rezervasyon")
 public class Rezervasyon {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -16,24 +25,44 @@ public class Rezervasyon {
     private String rezervasyonId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "olusturan_id",nullable = false)
-    private Personel olusturanId;
+    @JoinColumn(name = "olusturan_id", nullable = false)
+    private Personel olusturan;
 
-    @Column(name = "baslik",nullable = false,length = 50)
+    @Column(name = "baslik", nullable = false, length = 50)
     private String baslik;
 
-    @Column(name = "tarih",nullable = false)
+    @Column(name = "tarih", nullable = false)
     private LocalDate tarih;
 
-    @Column(name = "baslangic_saat",nullable = false)
+    @Column(name = "baslangic_saat", nullable = false)
     private Integer baslangicSaat;
 
-    @Column(name = "bitis_saat",nullable = false)
+    @Column(name = "bitis_saat", nullable = false)
     private Integer bitisSaat;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "oda_id",nullable = false)
-    private Oda odaId;
+    @JoinColumn(name = "oda_id", nullable = false)
+    private Oda oda;
+
+    @Column(name = "katilimci_sayisi", nullable = false)
+    private Integer katilimciSayisi;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "durum", nullable = false, length = 30)
+    private RezervasyonDurum durum;
+
+    @Column(name = "olusturma_zamani", nullable = false)
+    private LocalDateTime olusturmaZamani;
+
+    @Column(name = "iptal_zamani")
+    private LocalDateTime iptalZamani;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "iptal_eden_id")
+    private Personel iptalEden;
+
+    @Column(name = "iptal_nedeni", length = 500)
+    private String iptalNedeni;
 
     public Rezervasyon() {
     }
@@ -46,12 +75,12 @@ public class Rezervasyon {
         this.rezervasyonId = rezervasyonId;
     }
 
-    public Personel getOlusturanId() {
-        return olusturanId;
+    public Personel getOlusturan() {
+        return olusturan;
     }
 
-    public void setOlusturanId(Personel olusturanId) {
-        this.olusturanId = olusturanId;
+    public void setOlusturan(Personel olusturan) {
+        this.olusturan = olusturan;
     }
 
     public LocalDate getTarih() {
@@ -86,11 +115,59 @@ public class Rezervasyon {
         this.bitisSaat = bitisSaat;
     }
 
-    public Oda getOdaId() {
-        return odaId;
+    public Oda getOda() {
+        return oda;
     }
 
-    public void setOdaId(Oda odaId) {
-        this.odaId = odaId;
+    public void setOda(Oda oda) {
+        this.oda = oda;
+    }
+
+    public Integer getKatilimciSayisi() {
+        return katilimciSayisi;
+    }
+
+    public void setKatilimciSayisi(Integer katilimciSayisi) {
+        this.katilimciSayisi = katilimciSayisi;
+    }
+
+    public RezervasyonDurum getDurum() {
+        return durum;
+    }
+
+    public void setDurum(RezervasyonDurum durum) {
+        this.durum = durum;
+    }
+
+    public LocalDateTime getOlusturmaZamani() {
+        return olusturmaZamani;
+    }
+
+    public void setOlusturmaZamani(LocalDateTime olusturmaZamani) {
+        this.olusturmaZamani = olusturmaZamani;
+    }
+
+    public LocalDateTime getIptalZamani() {
+        return iptalZamani;
+    }
+
+    public void setIptalZamani(LocalDateTime iptalZamani) {
+        this.iptalZamani = iptalZamani;
+    }
+
+    public Personel getIptalEden() {
+        return iptalEden;
+    }
+
+    public void setIptalEden(Personel iptalEden) {
+        this.iptalEden = iptalEden;
+    }
+
+    public String getIptalNedeni() {
+        return iptalNedeni;
+    }
+
+    public void setIptalNedeni(String iptalNedeni) {
+        this.iptalNedeni = iptalNedeni;
     }
 }

@@ -1,6 +1,6 @@
 package com.jforce.backend.model.entity;
 
-
+import org.hibernate.annotations.ColumnDefault;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,8 +14,16 @@ public class IzinTuru {
     @Column(name = "izin_turu_adi",length = 50,unique = true,nullable = false)
     private String izinTuruAdi;
 
+    @Column(name = "yillik_haktan_duser_mi", nullable = false)
+    @ColumnDefault("false")
+    private boolean yillikHaktanDuserMi = false;
+
     public IzinTuru() {
     }
+
+    public boolean isYillikHaktanDuserMi() {return yillikHaktanDuserMi;}
+
+    public void setYillikHaktanDuserMi(boolean yillikHaktanDuserMi) {this.yillikHaktanDuserMi = yillikHaktanDuserMi;}
 
     public Integer getIzinTuruId() {
         return izinTuruId;

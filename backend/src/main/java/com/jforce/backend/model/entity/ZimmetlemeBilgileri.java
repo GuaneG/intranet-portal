@@ -20,6 +20,10 @@ public class ZimmetlemeBilgileri {
     @JoinColumn(name = "personel_id",nullable = false)
     private Personel personelId;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "talep_id", unique = true)
+    private EkipmanTalep talep;
+
     @Column(name = "teslim_tarihi",nullable = false)
     private LocalDateTime teslimTarihi;
 
@@ -51,6 +55,14 @@ public class ZimmetlemeBilgileri {
 
     public void setPersonelId(Personel personelId) {
         this.personelId = personelId;
+    }
+
+    public EkipmanTalep getTalep() {
+        return talep;
+    }
+
+    public void setTalep(EkipmanTalep talep) {
+        this.talep = talep;
     }
 
     public LocalDateTime getTeslimTarihi() {

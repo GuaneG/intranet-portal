@@ -1,5 +1,6 @@
 package com.jforce.backend.model.entity;
 
+import com.jforce.backend.model.enums.TalepDurum;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,11 +11,11 @@ public class DurumTuru {
     @Column(name = "durum_id")
     private Integer durumId;
 
-    @Column(name = "durum_adi",length = 50,unique = true,nullable = false)
-    private String durumAdi;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "durum_adi", length = 30, nullable = false, unique = true)
+    private TalepDurum durumKodu;
 
-    public DurumTuru() {
-    }
+    public DurumTuru() {}
 
     public Integer getDurumId() {
         return durumId;
@@ -24,11 +25,11 @@ public class DurumTuru {
         this.durumId = durumId;
     }
 
-    public String getDurumAdi() {
-        return durumAdi;
+    public TalepDurum getDurumKodu() {
+        return durumKodu;
     }
 
-    public void setDurumAdi(String durumAdi) {
-        this.durumAdi = durumAdi;
+    public void setDurumKodu(TalepDurum durumKodu) {
+        this.durumKodu = durumKodu;
     }
 }

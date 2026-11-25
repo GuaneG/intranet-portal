@@ -13,6 +13,9 @@ public class EkipmanTipi {
     @Column(name = "tip_adi",length = 50,nullable = false,unique = true)
     private String tipAdi;
 
+    @Column(name = "aktif_mi", nullable = false)
+    private boolean aktifMi = true;
+
     public EkipmanTipi() {
     }
 
@@ -30,5 +33,13 @@ public class EkipmanTipi {
 
     public void setTipAdi(String tipAdi) {
         this.tipAdi = tipAdi;
+    }
+
+    public boolean isAktifMi() {
+        return aktifMi;
+    }
+
+    public void setAktifMi(boolean aktifMi) {
+        this.aktifMi = aktifMi;
     }
 }

@@ -17,6 +17,10 @@ public class Personel {
     @Column(name = "personel_id",length = 36,nullable = false)
     private String personelId;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+
     @Column(name = "kullanici_adi",length = 50,nullable = false,unique = true)
     private String kullaniciAdi;
 
@@ -95,6 +99,10 @@ public class Personel {
 
     public String getPersonelId() {
         return personelId;
+    }
+
+    public Long getVersion() {
+        return version;
     }
 
     public String getMezunOkul() {

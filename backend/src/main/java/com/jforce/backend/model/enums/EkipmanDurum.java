@@ -2,5 +2,6 @@ package com.jforce.backend.model.enums;
 
 public enum EkipmanDurum {
     DEPODA,
-    PERSONELDE
+    PERSONELDE,
+    KULLANIM_DISI
 }

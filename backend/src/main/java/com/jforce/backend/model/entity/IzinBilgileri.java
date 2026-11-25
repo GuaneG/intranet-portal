@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "izin_bilgileri")
@@ -27,8 +28,8 @@ public class IzinBilgileri {
     @Column(name = "bitis_tarihi",nullable = false)
     private LocalDate bitisTarihi;
 
-    @Column(name = "is_gunu_sayisi",nullable = false)
-    private Integer isGunuSayisi;
+    @Column(name = "is_gunu_sayisi", nullable = false, precision = 4, scale = 1)
+    private BigDecimal isGunuSayisi;
 
     @Column(name = "yoneticiye_not",columnDefinition = "TEXT")
     private String yoneticiyeNot;
@@ -47,6 +48,9 @@ public class IzinBilgileri {
     @Column(name = "islem_tarihi")
     private LocalDateTime islemTarihi;
 
+    @Column(name = "karar_notu", length = 500)
+    private String kararNotu;
+
     public IzinBilgileri() {
     }
 
@@ -56,6 +60,14 @@ public class IzinBilgileri {
 
     public void setIslemTarihi(LocalDateTime islemTarihi) {
         this.islemTarihi = islemTarihi;
+    }
+
+    public String getKararNotu() {
+        return kararNotu;
+    }
+
+    public void setKararNotu(String kararNotu) {
+        this.kararNotu = kararNotu;
     }
 
     public String getIzinId() {
@@ -98,11 +110,11 @@ public class IzinBilgileri {
         this.bitisTarihi = bitisTarihi;
     }
 
-    public Integer getIsGunuSayisi() {
+    public BigDecimal getIsGunuSayisi() {
         return isGunuSayisi;
     }
 
-    public void setIsGunuSayisi(Integer isGunuSayisi) {
+    public void setIsGunuSayisi(BigDecimal isGunuSayisi) {
         this.isGunuSayisi = isGunuSayisi;
     }
 

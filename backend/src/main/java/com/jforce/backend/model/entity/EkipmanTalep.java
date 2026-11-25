@@ -21,14 +21,14 @@ public class EkipmanTalep {
     @JoinColumn(name = "ekipman_tipi_id",nullable = false)
     private EkipmanTipi ekipmanTipi;
 
-    @Column(name = "aciklama")
+    @Column(name = "aciklama", length = 255)
     private String aciklama;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "talep_durum_id",nullable = false)
     private DurumTuru talepDurum;
 
-    @Column(name = "talep_tarihi")      //kurulduğu an tarih koyma gibi bir anotasyon varmı bak
+    @Column(name = "talep_tarihi", nullable = false)      //kurulduğu an tarih koyma gibi bir anotasyon varmı bak
     private LocalDateTime talepTarihi;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,6 +37,9 @@ public class EkipmanTalep {
 
     @Column(name = "islem_tarihi")
     private LocalDateTime islemTarihi;
+
+    @Column(name = "karar_notu", length = 500)
+    private String kararNotu;
 
     public EkipmanTalep() {
     }
@@ -103,5 +106,13 @@ public class EkipmanTalep {
 
     public void setIslemTarihi(LocalDateTime islemTarihi) {
         this.islemTarihi = islemTarihi;
+    }
+
+    public String getKararNotu() {
+        return kararNotu;
+    }
+
+    public void setKararNotu(String kararNotu) {
+        this.kararNotu = kararNotu;
     }
 }

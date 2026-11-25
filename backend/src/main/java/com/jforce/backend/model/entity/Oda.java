@@ -1,9 +1,17 @@
 package com.jforce.backend.model.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Check;
 
 @Entity
-@Table(name = "oda")
+@Table(
+        name = "oda",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_oda_ad",
+                columnNames = "oda_ad"
+        )
+)
+@Check(constraints = "oda_kapasite > 0")
 public class Oda {
 
     @Id
@@ -11,7 +19,7 @@ public class Oda {
     @Column(name = "oda_id")
     private Integer odaId;
 
-    @Column(name = "oda_ad",nullable = false,unique = true,length = 50)
+    @Column(name = "oda_ad", nullable = false, length = 50)
     private String odaAd;
 
     @Column(name = "oda_kapasite",nullable = false)
