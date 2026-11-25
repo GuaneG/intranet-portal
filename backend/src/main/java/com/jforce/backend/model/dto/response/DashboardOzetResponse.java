@@ -1,14 +1,13 @@
 package com.jforce.backend.model.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import java.util.List;
 
 public record DashboardOzetResponse(
         List<DogumGunuItem>     bugunDogumGunleri,
+        long                    aktifEkipUyesiSayisi,
+        List<EkipDiziniResponse> ekipDiziniOzeti,
         List<DuyuruBaslikItem> sonDuyurular,
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        Integer                 kalanIzin,          // yönetici/admin'de null,canlı hesapla
+        IzinBakiyesiOzetResponse izinBakiyesi,
         Integer                 bugunIzinliSayisi,
         List<OdaDolulukItem>    odaDoluluk,
         List<TakdirItem>        sonTakdirler,

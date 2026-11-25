@@ -1,5 +1,7 @@
 package com.jforce.backend.model.dto.response;
 
+import com.jforce.backend.model.enums.BugunIzinDurumu;
+
 import java.util.List;
 
 public record EkipDiziniResponse(
@@ -7,6 +9,8 @@ public record EkipDiziniResponse(
         String soyad,
         String departman,
         String profilFoto,
-        List<LookUpResponse> yetenekler
+        List<LookUpResponse> yetenekler,
+        boolean yoneticinMi,
+        BugunIzinDurumu bugunIzinDurumu
 ) {
 }
